@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="../paperTemplate/styles/base.css" />
+		<title>Paper template</title>
+	</head>
+	<body>
+		<canvas id="myCanvas" resize></canvas>
+	</body>
+	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
+	<script charset="utf-8" src="../paperTemplate/scripts/skip.js"></script>
+	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
+
+//Classes
+var Square = {
+	rect: undefined,
+	config : function(){
+		this.strokeWidth = 4
+		this.fillColor = 'white'
+	}
+}
+
+//Setup
+function config(square){
+	square.strokeWidth = 4
+	square.fillColor = 'white'
+}
+
+var pos1 = new Point( window.innerWidth/2, window.innerHeight/2 )
+	pos2 = new Point( window.innerWidth/2 + 80 , window.innerHeight/2 ),
+	pos3 = new Point( window.innerWidth/2 + 160 , window.innerHeight/2 ),
+	pos4 = new Point( window.innerWidth/2 + 240, window.innerHeight/2 ),
+	
+	s1 = new Path.Rectangle(pos1, 70 )
+	s2 = new Path.Rectangle(pos2, 70 )
+	s3 = new Path.Rectangle(pos3, 70 )
+	s4 = new Path.Rectangle(pos4, 70 )
+
+	config(s1)
+	config(s2)
+	config(s3)
+	config(s4)
+
+	squares = [s1, s2, s3, s4]
+
+	var dice = 0
+
+// for( var i = 0; i < 4; i++){
+// 	point = new Point( window.innerWidth/2 + (i * 60) , window.innerHeight/2 ),
+// 	s = Square,
+// 	s.rect = new Path.Rectangle(point, 50 ),
+// 	s.config()
+// 	squares.push(s);
+// }
+
+//Draw
+var onFrame = function( event ){	
+	
+		event.count % 60 === 0 ? dice = Math.random() * 100 : null
+		
+		if(dice < 50 ){
+			randomWalk()
+			
+		} else if(dice >= 50){
+			randomFlash(event)
+		}
+		console.log(dice)
+}
+
+//  Whenever the window is resized, recenter the path.
+var onResize = function( event ){
+
+}
+
+function randomWalk(){
+	for(var i = 0; i < 4; i++ ){
+		squares[i].position += Math.random() * 10
+		squares[i].position += Math.random() * -10
+		squares[i].position.x += -.5
+	}
+}
+
+function randomFlash(event){
+	if(event.count % 5 === 0){	
+		for(var i = 0; i < 4; i++ ){
+			var newPos = new Point (Math.random() * 1200 , Math.random() * 700)
+			squares[i].position = newPos
+		}
+	}
+}
+
+onResize()
+
+
+	</script>
+</html>

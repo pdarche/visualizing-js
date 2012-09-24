@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="../paperTemplate/styles/base.css" />
+		<title>Paper template</title>
+	</head>
+	<body>
+		<canvas id="myCanvas" resize></canvas>
+	</body>
+	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
+	<script charset="utf-8" src="../paperTemplate/scripts/skip.js"></script>
+	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
+
+//Classes
+var Square = {
+	rect: undefined,
+	config : function(){
+		this.strokeWidth = 4
+		this.fillColor = 'white'
+	}
+}
+
+//Setup
+function config(square){
+	square.strokeWidth = 4
+	square.fillColor = 'white'
+}
+
+var pos1 = new Point( (window.innerWidth/4) - 250, 0)
+	pos2 = new Point( (window.innerWidth/4) * 2 - 250 , 0),
+	pos3 = new Point( (window.innerWidth/4) * 3 -250 , 0),
+	pos4 = new Point( (window.innerWidth/4) * 4 - 250, 0),
+	
+
+	s1 = new Path.Rectangle(pos1, 70 )
+	s2 = new Path.Rectangle(pos2, 70 )
+	s3 = new Path.Rectangle(pos3, 70 )
+	s4 = new Path.Rectangle(pos4, 70 )
+
+	config(s1)
+	config(s2)
+	config(s3)
+	config(s4)
+
+	squares = [s1, s2, s3, s4]
+
+	var increment = false,
+		count = 0
+		
+
+// for( var i = 0; i < 4; i++){
+// 	point = new Point( window.innerWidth/2 + (i * 60) , window.innerHeight/2 ),
+// 	s = Square,
+// 	s.rect = new Path.Rectangle(point, 50 ),
+// 	s.config()
+// 	squares.push(s);
+// }
+
+//Draw
+var onFrame = function( event ){	
+	
+		event.count % 150 === 0 ? count++ : null
+		
+		if(count === 1){
+			enter()
+			
+		} else if(count === 2){
+			rotate()
+
+		} else if(count === 3){
+			squareify()
+		
+		} else if (count === 4){
+			rotate()
+
+		}
+}
+
+//  Whenever the window is resized, recenter the path.
+var onResize = function( event ){
+
+
+}
+var enter = function(){
+	for(var i = 0; i < 4; i++ ){
+		squares[i].position.y += 2	
+	}
+}
+function enter(){
+	for(var i = 0; i < 4; i++ ){
+		squares[i].position.y += 2	
+	}
+}
+
+function rotate(){
+	for(var i = 0; i < 4; i++ ){
+		squares[i].rotate( 4 )	
+	}
+}
+
+function squareify(){
+	var s1Point = new Point ((window.innerWidth/2) - 100, 350),
+		s2Point = new Point ((window.innerWidth/2) - 100, 500),
+		s3Point = new Point ((window.innerWidth/2) + 100, 350),
+		s4Point = new Point ((window.innerWidth/2) + 100, 500)
+
+	var s1vec = s1Point - s1.position,
+		s2vec = s2Point - s2.position,
+		s3vec = s3Point - s3.position,
+		s4vec = s4Point - s4.position
+
+	s1vec.normalize()
+	s2vec.normalize()
+	s3vec.normalize()
+	s4vec.normalize()
+
+	s1.position += s1vec * .03
+	s2.position += s2vec * .03
+	s3.position += s3vec * .03
+	s4.position += s4vec * .03
+}
+
+var leapfrog = function(){
+	for(var i = 0; i < 4; i++ ){
+			squares[i].position.x += 80
+		if(i % 2 == 0){
+			squares[i].position.y += 10	
+		}else{
+			squares[i].position.y -= 10
+		}
+	}
+}
+
+function randomFlash(event){
+	if(event.count % 5 === 0){	
+		for(var i = 0; i < 4; i++ ){
+			var newPos = new Point (Math.random() * 1200 , Math.random() * 700)
+			squares[i].position = newPos
+		}
+	}
+}
+
+var movements = [enter, leapfrog]
+
+
+onResize()
+
+
+	</script>
+</html>
