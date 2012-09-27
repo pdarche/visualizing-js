@@ -3,81 +3,174 @@
 	<head>
 		<meta http-equiv="content-type" content="charset=utf-8" />
 		<link rel="stylesheet" type="text/css" href="../paperTemplate/styles/base.css" />
-		<title>Paper template</title>
+		<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+		<title>Chaos to Order</title>
 	</head>
 	<body>
-		<canvas id="myCanvas" resize></canvas>
+		<canvas id="myCanvas" width="600" height="600"></canvas>
 	</body>
 	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
 	<script charset="utf-8" src="../paperTemplate/scripts/skip.js"></script>
 	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
 
+
 //Classes
 var Square = {
+	rect : undefined,
+	velocity : undefined,
+	acceleration : undefined,
+	config : function(){
+		this.rect.strokeWidth = 4
+		this.rect.fillColor = 'white'
+	},
+	flutter : function(mag){
+		var currPos = this.rect.position,
+			randX = (currPos.x - mag).random(currPos.x + mag),
+			randY = (currPos.y - mag).random(currPos.y + mag),
+			randPos = new Point (randX, randY),
+			randVec = randPos - currPos
+		
+		this.rect.position += randVec
+	},
+	grow : function(){
+		this.rect.scale(1.001)
+		this.opacity += .1
+	},
+	shrink : function(){
+		this.rect.scale(.999)
+		this.rect.opacity -= .1
+	},		
+	applyForce : function(force){
+
+		this.acceleration += force
+	},
+	update : function(){
+		this.velocity += this.acceleration 
+		this.velocity *= .1
+		this.rect.position += this.velocity
+
+	},	
+}
+
+var Attractor = {
+
 	rect: undefined,
 	config : function(){
-		this.strokeWidth = 4
-		this.fillColor = 'white'
-	}
+		this.rect.strokeWidth = 4
+		this.rect.fillColor = 'white'
+	},
+	move : function(){
+
+	    if (this.rect.position.x > 400 || this.rect.position.x < 100) {
+	       this.velocity.x *= - 1;
+	    }
+
+	    if (this.rect.position.y > 400 || this.rect.position.y < 100) {
+	      this.velocity.y *= - 1;
+    	}
+
+    	this.rect.position += this.velocity 
+	},
+	attract : function(s){
+		var curPos = new Point (this.rect.position.x, this.rect.position.y ),
+			force = curPos - s.rect.position,
+			distance = this.rect.position.getDistance(s.rect.position)
+			
+		force.normalize()
+		strength = 2 / distance
+	    force *= strength
+	    return force
+	},
 }
 
 //Setup
-function config(square){
-	square.strokeWidth = 4
-	square.fillColor = 'white'
+var dice = 0,
+	counter = 20,
+	squares = [];
+
+for( var i = 0; i < 4; i++ ){
+	var start = new Point( 300, 300 ), //(window.innerWidth/2 - 200 ) + i * 80, window.innerHeight/2
+		end = new Point (301, 301),
+		s = Object.create( Square )
+
+	s.rect = new Path.Rectangle( start, 50 )
+	s.velocity = start - end
+	s.acceleration = start - end
+	s.config()
+	squares.push(s)
 }
 
-var pos1 = new Point( window.innerWidth/2, window.innerHeight/2 )
-	pos2 = new Point( window.innerWidth/2 + 80 , window.innerHeight/2 ),
-	pos3 = new Point( window.innerWidth/2 + 160 , window.innerHeight/2 ),
-	pos4 = new Point( window.innerWidth/2 + 240, window.innerHeight/2 ),
-	
-	s1 = new Path.Rectangle(pos1, 70 )
-	s2 = new Path.Rectangle(pos2, 70 )
-	s3 = new Path.Rectangle(pos3, 70 )
-	s4 = new Path.Rectangle(pos4, 70 )
+var a = Object.create( Attractor),
+	start = new Point (300, 300),
+	end = new Point (297, 297),
+	vec = end - start
 
-	config(s1)
-	config(s2)
-	config(s3)
-	config(s4)
-
-	squares = [s1, s2, s3, s4]
-
-	var dice = 0
-
-// for( var i = 0; i < 4; i++){
-// 	point = new Point( window.innerWidth/2 + (i * 60) , window.innerHeight/2 ),
-// 	s = Square,
-// 	s.rect = new Path.Rectangle(point, 50 ),
-// 	s.config()
-// 	squares.push(s);
-// }
+	a.velocity = vec
+	a.rect = new Path.Rectangle( start, 20 )
+	// a.config()
 
 //Draw
 var onFrame = function( event ){	
+
+		a.move();
 	
-		event.count % 60 === 0 ? dice = Math.random() * 100 : null
-		
-		if(dice < 50 ){
-			randomWalk()
-			
-		} else if(dice >= 50){
-			randomFlash(event)
+		event.count % 60 === 0  && counter > 0 ? counter-- : null
+
+		if ( event.count % 3 === 0 ){	
+			for ( var i = 0 ; i < squares.length; i++ ){
+				squares[i].flutter(counter);
+				
+				var force = a.attract(squares[i])
+
+				squares[i].applyForce(force)
+
+				squares[i].update();
+			} 
+
+		} 
+
+		console.log(event.count)
+
+		if (event.count === 3600){
+			$('canvas').remove()
 		}
-		console.log(dice)
+
 }
 
 //  Whenever the window is resized, recenter the path.
 var onResize = function( event ){
+	view.center
+}
 
+function changeSize(){
+		event.count % 60 === 0 ? dice = Math.random() * 100 : null
+
+		if( dice > 0 && dice < 33 ){
+			for ( var i = 0 ; i < squares.length; i++ ){
+				squares[0].grow();
+				squares[1].shrink();
+				squares[2].grow();
+				squares[3].shrink();
+			} 
+
+			
+		} else if ( dice >= 34 && dice < 66 ){
+			
+			for ( var j = 0 ; j < squares.length; j++ ){
+				squares[1].grow();
+				squares[2].shrink();
+				squares[3].grow();
+				squares[0].shrink();
+			} 			
+
+		} 
 }
 
 function randomWalk(){
-	for(var i = 0; i < 4; i++ ){
-		squares[i].position += Math.random() * 10
-		squares[i].position += Math.random() * -10
-		squares[i].position.x += -.5
+	for( var i = 0; i < 4; i++ ){
+		squares[i].rect.position += Math.random() * 10
+		squares[i].rect.position += Math.random() * -10
+		squares[i].rect.position.x += -.5
 	}
 }
 
@@ -85,8 +178,16 @@ function randomFlash(event){
 	if(event.count % 5 === 0){	
 		for(var i = 0; i < 4; i++ ){
 			var newPos = new Point (Math.random() * 1200 , Math.random() * 700)
-			squares[i].position = newPos
+			squares[i].rect.position = newPos
 		}
+	}
+}
+
+function goRight(){
+for ( var i = 0; i < 4; i++ ){
+		
+		squares[i].rect.position.y -= 10;
+		// squares[i].rect.position.x += 10;
 	}
 }
 

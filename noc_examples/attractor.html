@@ -26,6 +26,7 @@ var Mover = {
 			this.velocity += this.acceleration 
 			this.velocity *= .1
 			this.rect.position += this.velocity
+			console.log(this.velocity);
 		},
 		config : function(){
 			this.rect.strokeWidth = 4
@@ -51,6 +52,8 @@ var Attractor = {
 		config : function(){
 				this.rect.strokeWidth = 4
 				this.rect.fillColor = 'white'
+				this.rect.opacity = '.4'
+				this.rect.position = view.center
 		}
 }
 
@@ -62,30 +65,26 @@ var	a = Attractor
 	a.config()
 
 var m = Mover,
-	endPoint = new Point( 555, 630 ),
-	startPoint = new Point( 520, 630 )
+	p1 = new Point( 555, 630 ),
+	p2 = new Point( 550, 625 )
 
-	m.rect = new Path.Rectangle(startPoint, 20 )
-	m.velocity = endPoint - startPoint
-	m.acceleration = startPoint - startPoint
+	m.rect = new Path.Rectangle(p1, 20 )
+	m.velocity = p2 - p1
+	m.acceleration = p2 - p1
 	
 	m.config();
-
-	console.log(m.velocity)
 
 //Draw
 var onFrame = function( event ){
 
 	//create force vector
 	var force = (a.attract(m));
-	
+
 	//apply force to mover
 	m.applyForce(force);
 
 	//update position of mover
 	m.update()
-
-	console.log(m.velocity)
 
 }
 
