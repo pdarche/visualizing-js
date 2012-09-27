@@ -27,7 +27,7 @@ var increment = false,
 	count = 0
 		
 for( var i = 0; i < 4; i++ ){
-	var point = new Point( window.innerWidth/4 + (i * 200) , 50 ),
+	var point = new Point( view.bounds.bottomLeft ),
 		s = Object.create( Square )
 
 	s.rect = new Path.Rectangle(point, 50 )
@@ -35,12 +35,23 @@ for( var i = 0; i < 4; i++ ){
 	squares.push(s)
 }
 
+	var start = new Point (300, 299),
+		end = new Point (300, 300),
+		gravity = end - start;
+
+	var s = new Point (0, 600),
+		e = new Point (5, 570),
+		vec = e - s
 
 //Draw
 var onFrame = function( event ){	
 
-	squares[2].rect.position.x += 1
-	squares[2].rect.position.y = view.bounds.height - squares[2].rect.position.x.scale( 0, view.bounds.width, 0, PI ).sine().multiply( 500 )
+	if (squares[2].rect.position.y > 200){
+		// console.log()
+		vec += gravity 
+		squares[2].rect.position += vec 
+	}
+	
 
 }
 
