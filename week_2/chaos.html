@@ -44,12 +44,12 @@ var Square = {
 
 		this.acceleration += force
 	},
-	update : function(){
+	update : function(drag){
 		this.velocity += this.acceleration 
-		this.velocity *= .1
+		this.velocity *= (.1 * drag)
 		this.rect.position += this.velocity
 
-	},	
+	}	
 }
 
 var Attractor = {
@@ -59,13 +59,13 @@ var Attractor = {
 		this.rect.strokeWidth = 4
 		this.rect.fillColor = 'white'
 	},
-	move : function(){
+	move : function(max, min){
 
-	    if (this.rect.position.x > 400 || this.rect.position.x < 100) {
+	    if (this.rect.position.x > max || this.rect.position.x < min) {
 	       this.velocity.x *= - 1;
 	    }
 
-	    if (this.rect.position.y > 400 || this.rect.position.y < 100) {
+	    if (this.rect.position.y > max || this.rect.position.y < min) {
 	      this.velocity.y *= - 1;
     	}
 
@@ -85,8 +85,11 @@ var Attractor = {
 
 //Setup
 var dice = 0,
-	counter = 20,
-	squares = [];
+	counter = 30,
+	squares = [],
+	max = 400,
+	min = 200,
+	attractors = []
 
 for( var i = 0; i < 4; i++ ){
 	var start = new Point( 300, 300 ), //(window.innerWidth/2 - 200 ) + i * 80, window.innerHeight/2
@@ -102,38 +105,79 @@ for( var i = 0; i < 4; i++ ){
 
 var a = Object.create( Attractor),
 	start = new Point (300, 300),
-	end = new Point (297, 297),
+	end = new Point (295, 298),
 	vec = end - start
 
 	a.velocity = vec
 	a.rect = new Path.Rectangle( start, 20 )
 	// a.config()
 
+for (var j = 0; j < 4; j++){
+
+	var attractor = Object.create( Attractor ),
+		pos = new Point (200 + (75 * j), 300)
+
+		attractor.rect = new Path.Rectangle( pos, 2)
+		// attractor.config()
+
+		attractors.push(attractor)
+}
+
 //Draw
 var onFrame = function( event ){	
 
-		a.move();
-	
-		event.count % 60 === 0  && counter > 0 ? counter-- : null
+		event.count % 40 === 0  && counter > 0 ? counter-- : null
 
-		if ( event.count % 3 === 0 ){	
-			for ( var i = 0 ; i < squares.length; i++ ){
-				squares[i].flutter(counter);
-				
-				var force = a.attract(squares[i])
+		if (max > 305 && min < 295 ){
 
-				squares[i].applyForce(force)
+			if ( event.count % 3 === 0 ){	
+				for ( var i = 0 ; i < squares.length; i++ ){
+					
+					squares[i].flutter(counter);
+					
+					var force = a.attract(squares[i])
 
-				squares[i].update();
+					squares[i].applyForce(force)
+
+					squares[i].update(1);
+				} 
+
 			} 
 
+			a.move(max, min);	
+			max -= .05
+			min += .05
+
 		} 
+		else {
 
-		console.log(event.count)
+			console.log(attractors)
 
-		if (event.count === 3600){
+			for(var j = 0; j < attractors.length; j++){
+
+				var newForce = attractors[j].attract(squares[j])
+
+				squares[j].applyForce(newForce)
+
+				squares[j].update(.3)
+
+			}
+
+		}
+
+		if (event.count > 3000 && event.count < 3500){
+			console.log("there")
+			for ( var k = 0; k < 4 ; k++){
+				var vector = attractors[k].rect.position - squares[k].rect.position
+				vector *= .03
+				squares[k].rect.position += vector
+			}
+		}
+
+		else if(event.count > 3500){
 			$('canvas').remove()
 		}
+
 
 }
 
