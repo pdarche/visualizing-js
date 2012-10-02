@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="../paperTemplate/styles/base.css" />
+		<title>Mutual Attraction</title>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="600px" height="600px"></canvas>
+	</body>
+	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
+	<script charset="utf-8" src="../paperTemplate/scripts/skip.js"></script>
+	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
+
+//Classes
+var Mover = {
+		mass : 1, 
+		velocity : undefined, 				// this needs to be a paper vector
+		acceleration : undefined, 			// this needs to be a paper vector
+		circ : undefined,  					//position variable is part of the paper circle object
+		applyForce : function(force){
+			this.acceleration += force
+		},
+		update : function(){
+			this.velocity += this.acceleration 
+			this.velocity *= .1
+			this.circ.position += this.velocity
+		},
+		config : function(){
+			this.circ.strokeWidth = 4
+			this.circ.fillColor = 'white'
+		},		
+		attract : function(mover, eventCount){
+			var newForce = mover.circ.position - this.circ.position,
+				distance = this.circ.position.getDistance(mover.circ.position)
+
+			newForce.normalize()
+			strength = 	1/distance // (this.g * this.mass * m.mass) / (distance * distance )
+		    newForce *= strength	
+		    return newForce
+		}
+}
+
+var movers = [];
+
+//create four movers 
+for( var i = 0; i < 4; i++ ) {
+	var start = new Point( (290).rand(410), (290).rand(410) ), 
+		end = new Point ( (290).rand(410), (290).rand(410) ),							
+		m = Object.create( Mover ) 								// create instance of mover class
+
+	m.circ = new Path.Circle( start, (10).rand(40) ) 						// give our move a circle 
+	m.velocity = start - end 									//set initial velocity
+	m.acceleration = start - end 								//set initial acceleration 
+	m.config()													//configure circle properties
+
+	movers.push(m)												//add mover to array of movers
+}
+
+
+//Draw
+var onFrame = function( event ){
+
+	for ( var j = 0; j < movers.length; j++){
+		for ( var k = 0; k < movers.length; k++){
+			if( j !== k ){
+				//create force vector for each other mover
+				var force = movers[j].attract(movers[k], event.count)
+
+				//apply each force vector to the jth mover
+				movers[j].applyForce(force)
+			}
+		}
+
+	//update position of the jth mover
+	movers[j].update()
+
+	}
+
+}
+
+	</script>
+</html>

@@ -6,7 +6,7 @@
 		<title>Attractor</title>
 	</head>
 	<body>
-		<canvas id="myCanvas" resize></canvas>
+		<canvas id="myCanvas" width="600px" height="600px"></canvas>
 		
 	</body>
 	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
@@ -18,7 +18,7 @@ var Mover = {
 		mass : 1, 
 		velocity : undefined, // this needs to be a paper vector
 		acceleration : undefined, // this needs to be a paper vector
-		rect : undefined,
+		rect : undefined,  //position variable is part of the paper Rectangle object
 		applyForce : function(force){
 			this.acceleration += force
 		},
@@ -26,7 +26,6 @@ var Mover = {
 			this.velocity += this.acceleration 
 			this.velocity *= .1
 			this.rect.position += this.velocity
-			console.log(this.velocity);
 		},
 		config : function(){
 			this.rect.strokeWidth = 4
@@ -35,9 +34,9 @@ var Mover = {
 }
 
 var Attractor = {
-		position : new Point( window.innerWidth/2, window.innerHeight/2 ),
+		position : new Point( view.center ),
 		mass : 20,
-		g : 1.2,
+		g : .2,
 		rect : new Path.Rectangle(this.position, 50 ),
 		attract : function(mover){
 			var curPos = new Point (this.position.x, this.position.y ),
@@ -45,7 +44,7 @@ var Attractor = {
 				distance = this.position.getDistance(mover.rect.position)
 				
 			force.normalize()
-			strength = (this.g * this.mass * m.mass) / (distance * distance )
+			strength = 4/distance // (this.g * this.mass * m.mass) / (distance * distance )
 		    force *= strength
 		    return force
 		},
@@ -60,17 +59,19 @@ var Attractor = {
 //Setup
 var	a = Attractor
 
-	a.position = new Point( window.innerWidth/2, window.innerHeight/2 )
-	a.rect = new Path.Rectangle(a.position, 50 )
+	a.position = new Point( view.center )
+	a.rect = new Path.Circle(a.position, 50 )
 	a.config()
 
 var m = Mover,
-	p1 = new Point( 555, 630 ),
-	p2 = new Point( 550, 625 )
+	p1 = new Point( 400, 400 ),
+	p2 = new Point( 380, 400 )
 
-	m.rect = new Path.Rectangle(p1, 20 )
-	m.velocity = p2 - p1
+	m.rect = new Path.Circle(p1, 20 )
+	m.velocity = p2 - p1 // 
 	m.acceleration = p2 - p1
+
+	console.log(m.acceleration)
 	
 	m.config();
 
@@ -87,20 +88,5 @@ var onFrame = function( event ){
 	m.update()
 
 }
-
-//  Whenever the window is resized, recenter the path.
-var onResize = function( event ){
-
-	// path.position = view.center
-
-}
-
-
-//  Sometimes the browser just needs a good nudge
-//  to make sure it knows where the center is.
-
-onResize()
-
-
 	</script>
 </html>

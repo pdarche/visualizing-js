@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="paperTemplate/styles/base.css" />
+		<script src="http://code.jquery.com/jquery-latest.min.js" type="text/javascript"></script>
+		<title>Fortunate to Unfortunate</title>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="600" height="600"></canvas>
+	</body>
+	<script charset="utf-8" src="paperTemplate/scripts/paper.js"></script>
+	<script charset="utf-8" src="paperTemplate/scripts/skip.js"></script>
+	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
+
+//Classes
+var Square = {
+	rect: undefined,
+	velocity : undefined,
+	rotation : 0,
+	config : function(){
+		this.rect.strokeWidth = 4
+		this.rect.fillColor = 'white'
+	},
+	jump : function(){
+		var degrees = (1).rand(10)
+		this.velocity += gravity 
+		this.rect.position += this.velocity
+		// this.rect.rotate(degrees)
+		// this.rotate += degrees
+	},
+	burst : function(){
+
+	}
+}
+
+
+//SETUP
+var squares = [],
+	counter = -1,
+	gStart = new Point (1, 0),
+	gEnd = new Point (1, 1),
+	gravity = gEnd - gStart;
+
+//create squares
+for( var i = 0; i < 4; i++ ){
+	var startingPoint = new Point( 0, 0 ),
+		s = Object.create( Square )
+
+	s.rect = new Path.Rectangle(startingPoint, 50 )
+	s.config()
+	squares.push(s)
+}
+
+//set squares to initial corner positions
+resetToCorners()
+	
+var events = [ squares[0].jump(), squares[1].jump(), squares[2].jump(), squares[3].jump() ]
+
+
+
+//DRAW
+var onFrame = function( event ){	
+
+	//increment counter every two seconds or so
+	event.count % 120 === 0 ? counter++ : null
+	
+	//fire current event 
+	events[counter]
+
+	//if we've reached 3500 frames, remove the canvas
+	event.count === 3500 ? $('canvas').remove() : null
+}
+
+function resetToCorners(){
+	$.each(squares, function(i){
+		
+		if( i % 2 === 0 ){
+			//reset rights' position to bottom right
+			squares[i].rect.position = new Point (view.bounds.bottomRight )	
+
+			//reset rights velocity
+			var rsp = new Point ((6).rand(10), 600),
+				rep = new Point (0, (565).rand(570)),
+				rvec = rep - rsp
+
+			squares[i].velocity = rvec
+
+		} else{
+			//reset lefts' position to bottom left
+			squares[i].rect.position = new Point (view.bounds.bottomLeft )	
+
+			//reset lefts' velocity
+			var lsp = new Point (0, 600),
+				lep = new Point ((6).rand(10), (565).rand(570)),
+				lvec = lep - lsp
+
+			squares[i].velocity = lvec
+
+		}
+
+	})
+
+	console.log("squares reset to corners")
+}
+
+	</script>
+</html>
