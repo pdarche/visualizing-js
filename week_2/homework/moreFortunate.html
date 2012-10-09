@@ -13,17 +13,19 @@
 	<script charset="utf-8" src="paperTemplate/scripts/skip.js"></script>
 	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
 
-//Classes
+
+//CLASSES
 var Square = {
 	rect: undefined,
 	velocity : undefined,
-	rotation : 0,
+	// rotation : 0,
 	config : function(){
 		this.rect.strokeWidth = 4
 		this.rect.fillColor = 'white'
 	},
 	jump : function(){
-		var degrees = (1).rand(10)
+		// var degrees = (1).rand(10)
+
 		this.velocity += gravity 
 		this.rect.position += this.velocity
 		// this.rect.rotate(degrees)
@@ -51,33 +53,43 @@ for( var i = 0; i < 4; i++ ){
 	s.config()
 	squares.push(s)
 }
-
-//set squares to initial corner positions
-resetToCorners()
 	
-var events = [ squares[0].jump(), squares[1].jump(), squares[2].jump(), squares[3].jump() ]
+var events = [ 'jump', 'center' ] 
 
-
+// set squares to initial corner positions
+resetCorners()
 
 //DRAW
 var onFrame = function( event ){	
 
 	//increment counter every two seconds or so
-	event.count % 120 === 0 ? counter++ : null
+	event.count % 70 === 0 ? counter++ : null
+
+	// counter === 4 ? counter = 0 : null
+	if ( counter === 4 ){
+
+		counter = 0
+		resetCorners()
 	
-	//fire current event 
-	events[counter]
+	} else {
+
+		//fire current event 
+		squares[counter]['jump']()
+	}
+
+	console.log(counter)
 
 	//if we've reached 3500 frames, remove the canvas
 	event.count === 3500 ? $('canvas').remove() : null
+
 }
 
-function resetToCorners(){
+function resetCorners(){
 	$.each(squares, function(i){
 		
 		if( i % 2 === 0 ){
 			//reset rights' position to bottom right
-			squares[i].rect.position = new Point (view.bounds.bottomRight )	
+			squares[i].rect.position = new Point ( view.bounds.bottomRight + 25)	
 
 			//reset rights velocity
 			var rsp = new Point ((6).rand(10), 600),
@@ -88,7 +100,7 @@ function resetToCorners(){
 
 		} else{
 			//reset lefts' position to bottom left
-			squares[i].rect.position = new Point (view.bounds.bottomLeft )	
+			squares[i].rect.position = new Point (view.bounds.bottomLeft - 25 )	
 
 			//reset lefts' velocity
 			var lsp = new Point (0, 600),
@@ -102,6 +114,23 @@ function resetToCorners(){
 	})
 
 	console.log("squares reset to corners")
+}
+
+function resetCenter(){
+	$.each(squares, function(i){
+		
+		squares[i].rect.position = new Point (view.bounds.bottomRight )	
+
+		//reset rights velocity
+		var start = new Point ((6).rand(10), 600),
+			target = new Point (0, (565).rand(570)),
+			rvec = rep - rsp
+
+		squares[i].velocity = rvec
+
+	})
+
+	console.log("squares reset to center")
 }
 
 	</script>

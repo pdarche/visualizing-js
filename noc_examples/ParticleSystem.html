@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="../paperTemplate/styles/base.css" />
+		<title>Attractor</title>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="600px" height="600px"></canvas>
+		
+	</body>
+	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
+	<script charset="utf-8" src="../paperTemplate/scripts/skip.js"></script>
+	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
+
+//Classes
+var Particle = { 
+		velocity : undefined, // this needs to be a paper vector
+		acceleration : undefined, // this needs to be a paper vector
+		form : undefined,  //position variable is part of the paper Rectangle object
+		applyForce : function(force){
+			this.acceleration += force
+		},
+		update : function(){
+			this.velocity += this.acceleration 
+			this.velocity *= .1
+			this.rect.position += this.velocity
+		},
+		config : function(){
+			var p1 = new Point ( 0, 0),
+				p2 = new Point ( (0).rand(600) ),
+				vel = p2 - p1
+				
+				vel.normalize()
+				vel *= .1
+
+			this.velocity = vel
+			this.acceleration = vel
+
+			this.form.strokeWidth = 4
+			this.form.fillColor = 'white'
+
+		}
+}
+
+var ParticleSystem = {
+	origin : new Point ( view.center ),
+	particles : [],
+	run : function(){
+		for (var i = 0; i < this.particles.length; i++){
+			var particle = this.particles[i]
+			
+			particle.update()	
+
+			p.dead() ? particles.remove(i) : null
+		}
+	},
+	addParticle : function(){
+		var newParticle = Object.create( Particle )
+
+		newParticle.config()
+
+		this.particles.push(newParticle)
+	}	
+}
+
+//Setup
+
+var ps = Object.create( ParticleSystem )
+
+for (var i = 0; i < 50; i++){
+	var m = Object.create( Particle )
+
+		m.form = new Path.Circle( ps.origin, (10).rand(20) )
+		
+		m.config()
+}
+
+//Draw
+var onFrame = function( event ){
+
+
+}
+
+
+	</script>
+</html>

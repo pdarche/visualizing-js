@@ -57,13 +57,13 @@ var Attractor = {
 }
 
 //Setup
-var	a = Attractor
+var	a = Object.create( Attractor )
 
 	a.position = new Point( view.center )
 	a.rect = new Path.Circle(a.position, 50 )
 	a.config()
 
-var m = Mover,
+var m = Object.create( Mover) ,
 	p1 = new Point( 400, 400 ),
 	p2 = new Point( 380, 400 )
 

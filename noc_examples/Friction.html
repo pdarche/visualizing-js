@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="../paperTemplate/styles/base.css" />
+		<title>Attractor</title>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="600px" height="600px"></canvas>
+		
+	</body>
+	<script charset="utf-8" src="../paperTemplate/scripts/paper.js"></script>
+	<script charset="utf-8" src="../paperTemplate/scripts/skip.js"></script>
+	<script charset="utf-8" type="text/paperscript" canvas="myCanvas">
+
+//CLASSES
+var Mover = { 
+		velocity : undefined, // this needs to be a paper vector
+		acceleration : undefined, // this needs to be a paper vector
+		circ : undefined,  //position variable is part of the paper circangle object
+		applyForce : function(force){
+			this.acceleration += force
+		},
+		update : function(){
+
+			if (this.circ.position.x >= 580 || this.circ.position.x < 20) {
+		       this.velocity.x *= - 1
+		       
+		    }
+
+		    if (this.circ.position.y >= 585 || this.circ.position.y < 20) {
+		      this.velocity.y *= - 1
+		      
+	    	}
+
+			this.velocity += this.acceleration 
+			this.velocity.normalize()
+			this.circ.position += this.velocity
+			
+		},
+		config : function(){
+			this.velocity.normalize()
+			this.acceleration.normalize()
+			this.circ.strokeWidth = 4
+			this.circ.fillColor = 'white'
+		}
+}
+
+var Liquid = {
+		dragCoE : -0.02,
+		rect : new Path.Rectangle(0, 250, 600, 100),
+		drag : function(mover){
+
+			if (mover.circ.position.y + 15 > this.rect.position.y && mover.circ.position.y < this.rect.position.y + 115){
+				
+				var dragForce = mover.velocity * this.dragCoE
+
+				return dragForce
+
+			} else {
+				
+				var p1 = new Point ( 0,0 ),
+					noForce = p1 - p1
+
+				return noForce 
+			}
+		},
+		config : function(){
+			this.rect.strokeWidth = 4
+			this.rect.fillColor = 'gray'
+			this.rect.opacity = .4
+		}
+}
+
+var Wind = {
+		blow : function(){
+			var p1 = new Point ( 0, 0 )
+			var p2 = new Point ( 1, 0 )
+			var windVec = p2 - p1
+			windVec *= .01
+			return windVec
+		}
+}
+
+//Setup
+var m = Object.create( Mover ),
+	p1 = new Point( 100, 100 ),
+	p2 = new Point( 120, 100),
+	g1 = new Point (0, 0),
+	g2 = new Point (0, 1),	
+	gravity = g2 - g1
+	gravity *= .05
+
+	m.circ = new Path.Circle( p1, 30 )
+	m.velocity = p2 - p1 // 
+	m.acceleration = p2 - p2
+	m.velocity *= .01
+	
+	m.config();
+
+var	l = Object.create( Liquid )
+
+	l.config()
+
+var w = Object.create( Wind ),
+	wind = w.blow()
+
+//Draw
+var onFrame = function( event ){
+
+	// if(event.count < 50){
+		var drag = l.drag(m)
+
+		// //apply force to mover
+		m.applyForce(gravity)
+		m.applyForce(drag)
+		m.applyForce(wind)
+
+		// //update position of mover
+		m.update()
+	// }
+
+}
+	</script>
+</html>
