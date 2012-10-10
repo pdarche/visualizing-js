@@ -15,20 +15,24 @@
 
 //Classes
 var Particle = { 
-		velocity : undefined, // this needs to be a paper vector
-		acceleration : undefined, // this needs to be a paper vector
-		form : undefined,  //position variable is part of the paper Rectangle object
+		velocity : undefined, 				// this needs to be a paper vector
+		acceleration : undefined,			// this needs to be a paper vector
+		timer : 225,			
+		form : undefined,  					//position variable is part of the paper Rectangle object
 		applyForce : function(force){
 			this.acceleration += force
 		},
 		update : function(){
 			this.velocity += this.acceleration 
 			this.velocity *= .1
-			this.rect.position += this.velocity
+			this.form.position += this.velocity
+
+			this.form.opacity -= .005
+			this.timer -= 1.2
 		},
 		config : function(){
-			var p1 = new Point ( 0, 0),
-				p2 = new Point ( (0).rand(600) ),
+			var p1 = new Point ( (0).rand(600) ),
+				p2 = new Point ( (0).rand(600), 0 ),
 				vel = p2 - p1
 				
 				vel.normalize()
@@ -40,6 +44,13 @@ var Particle = {
 			this.form.strokeWidth = 4
 			this.form.fillColor = 'white'
 
+		},
+		isDead : function(){
+			if (this.timer <= 0){
+				return true
+			} else{
+				return false
+			}
 		}
 }
 
@@ -50,14 +61,19 @@ var ParticleSystem = {
 		for (var i = 0; i < this.particles.length; i++){
 			var particle = this.particles[i]
 			
+			particle.applyForce(gravity)
 			particle.update()	
 
-			p.dead() ? particles.remove(i) : null
+			particle.isDead() ? this.particles.remove(i) : null 
+			particle.isDead() ? console.log("removed") : null 
 		}
+
+		this.addParticle()
 	},
 	addParticle : function(){
 		var newParticle = Object.create( Particle )
 
+		newParticle.form = new Path.Circle( ps.origin, (10).rand(20) )
 		newParticle.config()
 
 		this.particles.push(newParticle)
@@ -65,23 +81,34 @@ var ParticleSystem = {
 }
 
 //Setup
-
 var ps = Object.create( ParticleSystem )
 
 for (var i = 0; i < 50; i++){
 	var m = Object.create( Particle )
 
 		m.form = new Path.Circle( ps.origin, (10).rand(20) )
-		
 		m.config()
+		ps.particles.push(m)
 }
+
+var g1 = new Point ( 0, 0),
+	g2 = new Point ( 0, 1),
+	gravity = g2 - g1
 
 //Draw
 var onFrame = function( event ){
 
+	ps.run()
+
+	console.log(ps.particles.length)
 
 }
 
+Array.prototype.remove = function(from, to) {
+  var rest = this.slice((to || from) + 1 || this.length);
+  this.length = from < 0 ? this.length + from : from;
+  return this.push.apply(this, rest);
+};
 
 	</script>
 </html>
