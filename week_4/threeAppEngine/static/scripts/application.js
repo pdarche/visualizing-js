@@ -1,22 +1,16 @@
 
 
-
-
 //  Now that we've included jQuery we can use its syntax for determining if
 //  the full HTML page has been loaded. Waiting for the document to be ready
 //  helps us avoid strange errors--because if our document is ready that means
 //  all of our JavaScript libraries should have properly loaded too!
 
 $( document ).ready( function(){
-	
-	console.log("geo", geo)
-	console.log("hdi", hdi)
 
     var ws = new WebSocket("ws://localhost:8000/socket");
     ws.onmessage = function(event) {
        
-       var tweet = JSON.parse(event.data)
-
+    	var tweet = JSON.parse(event.data)
   
     	var noBeliebers = /one less lonely girl/i,
 	       	   belieber = noBeliebers.test(tweet.text),
@@ -55,7 +49,7 @@ $( document ).ready( function(){
 
        			// group.add( dropPin(lat, lon, 0xFF00FF ) )
        		})
-       } else if (tweet.user.location !== '' ){
+       	} else if (tweet.user.location !== '' ){
 
        		var location = tweet.user.location
     		
@@ -74,7 +68,7 @@ $( document ).ready( function(){
        
        	// group.add( dropPin ( Math.random() * 90, Math.random() * 180, 0xFF00FF ) ) 
 
-	console.log("user", tweet.user) 
+		console.log("user", tweet.user) 
 
 	    	var tweetString = '<div class="tweet"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
 	    		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a>'
@@ -82,11 +76,11 @@ $( document ).ready( function(){
 	       
 	        $('#tweets').prepend(tweetString)	      
 
-
-
 	    	$('.tweet').first().hide().fadeIn()
 
-	    	console.log($('.tweet').eq(1).position())	       
+	    	console.log($('.tweet').eq(1).position())
+
+	    	$('.tweet').eq(5) ? $('.tweet').eq(5).fadeOut(1000) : null 	       
 	     
 	    }
 

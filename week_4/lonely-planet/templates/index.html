@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="content-type" content="charset=utf-8" />
+		<link rel="stylesheet" type="text/css" href="http://localhost:8000/static/styles/base.css" />
+		<script charset="utf-8" src="http://localhost:8000/static/scripts/geolocation.js"></script>	
+		<title>Three.js template</title>
+
+	</head>
+	<body>
+		<!-- <audio id="audio_player"autoplay="autoplay"><source src="http://localhost:8000/static/media/mad_world.mp3" type="audio/mp3"></audio> -->
+		<div id="three"></div>
+		<div id="nav">
+			<h1>Lonely Planet</h1>
+			<div id="tweets"></div> 
+		</div>
+		<script charset="utf-8" src="http://localhost:8000/static/scripts/jquery.js"></script>
+		<script charset="utf-8" src="http://localhost:8000/static/scripts/skip.js"></script>
+		<script charset="utf-8" src="http://localhost:8000/static/scripts/three.js"></script>
+		<script charset="utf-8" src="http://localhost:8000/static/scripts/application.js"></script>	
+		<script src="http://localhost:8000/static/scripts/helvetiker_regular.typeface.js"></script>
+		<script src="http://localhost:8000/static/scripts/helvetiker_bold.typeface.js"></script>
+		<script type="text/javascript">
+			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
+				songIndex = 0,
+				audioPlayer = document.getElementById('audio_player');
+
+			$('#audio_player').on('ended', function(){
+				audioPlayer.src = songPaths[songIndex];
+				songIndex !== 3 ? songIndex++ : songIndex = 0;
+			})
+		</script>		
+	</body>
+</html>
