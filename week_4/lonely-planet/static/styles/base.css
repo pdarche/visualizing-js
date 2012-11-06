@@ -12,11 +12,11 @@ body
 }
 
 #nav{
+	position:absolute;
 	width: 350px;
 	height: 750px;
 	background-color: rgba(100,100,100, .4);
 	display:inline-block;
-	/*border-right: 1px solid gray;*/
 	z-index: 1000;
 }
 
@@ -40,12 +40,9 @@ body
 	margin: 10px 10px 0px 15px;
 	-webkit-border-radius:5px;
 	display:inline-block;
-	/*-webkit-transition: opacity .2s;*/
 }
 
 .tweet:hover{
-	/*border:1px solid white;*/
-	/*width:238px;*/
 	background-color:rgba(255,255,255,.7);
 }
 
@@ -74,6 +71,111 @@ h1{
 	font-weight:300;
 	letter-spacing: -2px;
 	border-bottom:1px solid gray;
+}
+
+#control_panel{
+	position:relative;
+	float:right;
+	width:250px;
+	height:450px;
+	margin:150px 0px;
+	color:gray;
+}
+
+#control_title{
+	position: relative;
+	display: block;
+	font-size:16px;
+	margin: 15px 5px 10px 5px;
+
+	text-align:center;
+}
+
+.hidden{
+	left:230px;
+	-webkit-transition: all .25s;
+}
+
+.shown{
+	left:0px;
+	-webkit-transition: all .25s;
+}
+
+.hidden_tweets{
+	left:-350px;
+	-webkit-transition: all .25s;	
+}
+
+#controls{
+	background-color: rgba(100,100,100, .4);
+	float:right;
+	height:100%;
+	width:230px;
+	-webkit-border-radius:5px 0px 0px 5px;
+}
+
+#controls {
+	text-decoration: none;
+	display: block;
+	padding:0px;
+	margin:0px;
+}
+
+.option-wrapper div{
+	float:left;
+	width:22%;
+	padding:0px 5px;
+	margin:5px;
+	text-align:center;
+	height:24px;
+	line-height:193%;
+}
+
+.option_type {
+	font-size:14px;
+}
+
+.option {
+	border: 1px solid gray;
+}
+
+.option:hover {
+	cursor:pointer;
+}
+
+.option-one {
+	-webkit-border-radius: 5px 0px 0px 5px;
+	margin-right:0px;
+	padding-right:0px;
+	border-right:0px;
+}
+
+.option-two {
+	-webkit-border-radius: 0px 5px 5px 0px;
+	margin-left:0px;
+	padding-left:0px;	
+}
+
+.active {
+	-webkit-box-shadow:  
+		inset 4px 4px 4px -4px #888,
+		inset -4px 4px 4px -4px #888;
+}
+
+#flag{
+	position:relative;
+	float:left;
+	height:50px;
+	width:20px;
+	margin:0px;
+	margin-top:185px;
+	background-color: rgba(100,100,100, .4);
+	z-index:200;
+	-webkit-border-radius:5px 0px 0px 5px;
+}
+
+#flag:hover{
+	cursor:pointer;
 }
 
 #three

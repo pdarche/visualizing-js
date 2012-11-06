@@ -8,11 +8,29 @@
 
 	</head>
 	<body>
-		<!-- <audio id="audio_player"autoplay="autoplay"><source src="http://localhost:8000/static/media/mad_world.mp3" type="audio/mp3"></audio> -->
+		<audio id="audio_player"autoplay="autoplay"><source src="http://localhost:8000/static/media/mad_world.mp3" type="audio/mp3"></audio>
 		<div id="three"></div>
-		<div id="nav">
+		<div id="nav" class="shown">
 			<h1>Lonely Planet</h1>
-			<div id="tweets"></div> 
+			<div id="tweets"></div>
+		</div>
+		<div id="control_panel" class="hidden">
+			<div id="flag"></div>
+			<div id="controls">
+				<div id="control_title">Controls</div>
+				<div id="control_wrapper">
+					<div class="option-wrapper">
+						<div class="option_type">Tweets</div>
+						<div id="show_tweets" class="option-one option active">Show</div>
+						<div id="hide_tweets" class="option-two option">Hide</div>
+					</div>
+					<div class="option-wrapper">
+						<div class="option_type">Earth</div>
+						<div id="show_geog" class="option-one option active">Geo</div>
+						<div id="show_borders" class="option-two option">Borders</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/jquery.js"></script>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/skip.js"></script>
@@ -21,7 +39,7 @@
 		<script src="http://localhost:8000/static/scripts/helvetiker_regular.typeface.js"></script>
 		<script src="http://localhost:8000/static/scripts/helvetiker_bold.typeface.js"></script>
 		<script type="text/javascript">
-			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
+			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
 				songIndex = 0,
 				audioPlayer = document.getElementById('audio_player');
 

@@ -1,4 +1,5 @@
-
+//spanish,french,bengali,chinese,hindi,korean,russian,swahili,german,turkish,arabic,japanese,portugues
+//solitario,solitaire,একাকী,寂寞,अकेला,고독한,одинокий,upweke,einsam,yalnız,متوحد,寂しい,solitário
 
 //  Now that we've included jQuery we can use its syntax for determining if
 //  the full HTML page has been loaded. Waiting for the document to be ready
@@ -8,6 +9,22 @@ var pins = [],
 	userPin
 
 $( document ).ready( function(){
+
+	$('#flag').click(function(){		
+		$('#control_panel').toggleClass("shown", "hidden")
+	})
+
+	$('#show_tweets').click(function(){
+		$('#hide_tweets').removeClass('active')
+		$(this).addClass('active')
+		$('#nav').removeClass('hidden_tweets').addClass('shown').addClass('active')	
+	})
+
+	$('#hide_tweets').click(function(){
+		$('#show_tweets').removeClass('active')
+		$(this).addClass('active')
+		$('#nav').removeClass('shown').addClass('hidden_tweets')
+	})
 
 	//callback
     function uAreHere( x, y ){
@@ -45,7 +62,7 @@ $( document ).ready( function(){
 
 		textWhy = new THREE.TextGeometry( "Why", { size: 10, height: 5, curveSegments: 6, font: "helvetiker", weight: "normal", style: "normal" });
 
-		console.log("text", urh)
+		// console.log("text", urh)
 
 		scene.add( textWh )
 
@@ -101,18 +118,21 @@ $( document ).ready( function(){
 
        		var location = tweet.user.location
 	    		location = location.replace(',', '+')
-	    		location = location.replace(' ', '+')
+	    		location = location.replace(/\s+/, '+')
 
        		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&sensor=false', function(data){
-       			
-       			// console.log("from twitter location", data)
 
-       			var lat = data.results[0].geometry.location.lat,
-       				lon = data.results[0].geometry.location.lng,
-       				pin = dropPin(lat, lon, 0xFFFFFF, tweet )  //CC11
+       			if( data.status !== "ZERO_RESULTS"){
+	       			
+					// console.log(data.status)
 
-       			group.add( pin )
-       			pins.push(pin)		
+	       			var lat = data.results[0].geometry.location.lat,
+	       				lon = data.results[0].geometry.location.lng,
+	       				pin = dropPin(lat, lon, 0xFFFFFF, tweet )  //CC11
+
+	       			group.add( pin )
+	       			pins.push(pin)		
+	       		}
        				
        		})
 
@@ -141,6 +161,9 @@ $( document ).ready( function(){
 	//add controls
 	addControls()
 
+	//add stars
+	addStars()
+
 	window.group = new THREE.Object3D()
 
 	//get user location
@@ -152,7 +175,7 @@ $( document ).ready( function(){
 
 	var earthTexture = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/good-earth/small-bump.jpeg" );
 
-	window.earthRadius = 180
+	window.earthRadius = 90
 	window.earth = new THREE.Mesh(
 		new THREE.SphereGeometry( earthRadius, 64, 64 ),
 		new THREE.MeshPhongMaterial( { 
@@ -249,7 +272,7 @@ $( document ).ready( function(){
 
     console.log("skybox", skybox)
 
-    scene.add(skybox);
+    // scene.add(skybox);
 
 	loop()	
 })
@@ -264,6 +287,11 @@ function loop(){
 
 	group.rotation.y  += ( 0.07 ).degreesToRadians()
 	clouds.rotation.y += ( 0.04 ).degreesToRadians()
+
+	if (camera.position.z > 300 ) {
+		camera.position.z -= 1
+	}
+
 
 	if ( pins.length > 0 ) {
 		$.each(pins, function(i){
@@ -324,7 +352,7 @@ function dropPin( latitude, longitude, color, tweet ){
 		})
 	),
 	indicator = new THREE.Mesh(
-		new THREE.CylinderGeometry( 1, 1, 0, false ),
+		new THREE.CylinderGeometry( .5, .5, 0, false ),
 		new THREE.MeshBasicMaterial({ 
 			color: color,
 			transparent : true,
@@ -432,6 +460,7 @@ function setupThree(){
 	
 	window.scene = new THREE.Scene()
 
+	scene.fog = new THREE.FogExp2( 0x000000, 0.00000025 );
 
 	//  And now let's create a Camera object to look at our Scene.
 	//  In order to do that we need to think about some variable first
@@ -500,18 +529,28 @@ function addLights(){
 	ambient,
 	directional
 	
-	//  Let's create an Ambient light so that even the dark side of the 
-	//  earth will be a bit visible. 
+	// //  Let's create an Ambient light so that even the dark side of the 
+	// //  earth will be a bit visible. 
 	
 	ambient = new THREE.AmbientLight( 0x666666 )
 	scene.add( ambient )	
 	
 	
-	//  Now let's create a Directional light as our pretend sunshine.
+	// //  Now let's create a Directional light as our pretend sunshine.
 	
 	directional = new THREE.DirectionalLight( 0xCCCCCC )
 	directional.castShadow = true	
 	scene.add( directional )
+
+	// var dirLight,
+	// 	ambientLight
+
+	// dirLight = new THREE.DirectionalLight( 0xffffff );
+	// dirLight.position.set( -1, 0, 1 ).normalize();
+	// scene.add( dirLight );
+
+	// ambientLight = new THREE.AmbientLight( 0x000000 );
+	// scene.add( ambientLight );
 
 
 	//  Those lines above are enough to create another working light.
@@ -524,12 +563,70 @@ function addLights(){
 	directional.shadowCameraRight   =  600
 	directional.shadowCameraBottom  = -600
 	directional.shadowCameraLeft    = -600
-	directional.shadowCameraNear    =  600
+	directional.shadowCameraNear    =  300
 	directional.shadowCameraFar     = -600
 	directional.shadowBias          =   -0.0001
 	directional.shadowDarkness      =    0.3
 	directional.shadowMapWidth      = directional.shadowMapHeight = 2048
 	//directional.shadowCameraVisible = true
+}
+
+function addStars(){
+					// stars
+
+				var i, r = 300, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
+
+				for ( i = 0; i < 250; i ++ ) {
+
+					var vertex = new THREE.Vector3();
+					vertex.x = Math.random() * 2 - 1;
+					vertex.y = Math.random() * 2 - 1;
+					vertex.z = Math.random() * 2 - 1;
+					vertex.multiplyScalar( r );
+
+					starsGeometry[ 0 ].vertices.push( vertex );
+
+				}
+
+				for ( i = 0; i < 1500; i ++ ) {
+
+					var vertex = new THREE.Vector3();
+					vertex.x = Math.random() * 2 - 1;
+					vertex.y = Math.random() * 2 - 1;
+					vertex.z = Math.random() * 2 - 1;
+					vertex.multiplyScalar( r );
+
+					starsGeometry[ 1 ].vertices.push( vertex );
+
+				}
+
+				var stars;
+				var starsMaterials = [
+					new THREE.ParticleBasicMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
+					new THREE.ParticleBasicMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
+					new THREE.ParticleBasicMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
+					new THREE.ParticleBasicMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
+					new THREE.ParticleBasicMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
+					new THREE.ParticleBasicMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
+				];
+
+				for ( i = 10; i < 30; i ++ ) {
+
+					stars = new THREE.ParticleSystem( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
+
+					stars.rotation.x = Math.random() * 6;
+					stars.rotation.y = Math.random() * 6;
+					stars.rotation.z = Math.random() * 6;
+
+					s = i * 10;
+					stars.scale.set( s, s, s );
+
+					stars.matrixAutoUpdate = false;
+					stars.updateMatrix();
+
+					scene.add( stars );
+
+				}
 }
 
 
