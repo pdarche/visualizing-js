@@ -15,9 +15,10 @@ body
 	position:absolute;
 	width: 350px;
 	height: 750px;
-	background-color: rgba(100,100,100, .4);
+	background-color: rgba(255,255,255, .2);
 	display:inline-block;
 	z-index: 1000;
+	border-right:1px solid white;
 }
 
 .img {
@@ -76,7 +77,7 @@ h1{
 #control_panel{
 	position:relative;
 	float:right;
-	width:250px;
+	width:215px;
 	height:450px;
 	margin:150px 0px;
 	color:gray;
@@ -92,7 +93,7 @@ h1{
 }
 
 .hidden{
-	left:230px;
+	left:195px;
 	-webkit-transition: all .25s;
 }
 
@@ -107,10 +108,10 @@ h1{
 }
 
 #controls{
-	background-color: rgba(100,100,100, .4);
+	background-color: rgba(255,255,255, .2);
 	float:right;
 	height:100%;
-	width:230px;
+	width:195px;
 	-webkit-border-radius:5px 0px 0px 5px;
 }
 
@@ -125,7 +126,7 @@ h1{
 	float:left;
 	width:22%;
 	padding:0px 5px;
-	margin:5px;
+	margin:5px 0px ;
 	text-align:center;
 	height:24px;
 	line-height:193%;
@@ -144,14 +145,14 @@ h1{
 }
 
 .option-one {
-	-webkit-border-radius: 5px 0px 0px 5px;
+	-webkit-border-radius: 12px 0px 0px 12px;
 	margin-right:0px;
 	padding-right:0px;
 	border-right:0px;
 }
 
 .option-two {
-	-webkit-border-radius: 0px 5px 5px 0px;
+	-webkit-border-radius: 0px 12px 12px 0px;
 	margin-left:0px;
 	padding-left:0px;	
 }
@@ -169,7 +170,7 @@ h1{
 	width:20px;
 	margin:0px;
 	margin-top:185px;
-	background-color: rgba(100,100,100, .4);
+	background-color: rgba(255,255,255, .2);
 	z-index:200;
 	-webkit-border-radius:5px 0px 0px 5px;
 }

@@ -1,15 +1,253 @@
 //spanish,french,bengali,chinese,hindi,korean,russian,swahili,german,turkish,arabic,japanese,portugues
 //solitario,solitaire,একাকী,寂寞,अकेला,고독한,одинокий,upweke,einsam,yalnız,متوحد,寂しい,solitário
 
-//  Now that we've included jQuery we can use its syntax for determining if
-//  the full HTML page has been loaded. Waiting for the document to be ready
-//  helps us avoid strange errors--because if our document is ready that means
-//  all of our JavaScript libraries should have properly loaded too!
-var pins = [],
-	userPin
+	// globals 
+	var pins = [], userPin
 
-$( document ).ready( function(){
+	var WIDTH = window.innerWidth,
+		HEIGHT = window.innerHeight
 
+	var camera, 
+		scene, 
+		glowcamera, 
+		glowscene
+
+	var renderer, 
+		renderTarget, 
+		renderTargetGlow
+
+	// scene objects 
+	var group,
+		earthRadius,
+		earth,
+		clouds,
+		atmosphere
+
+	var finalcomposer, 
+		glowcomposer, 
+		hblur, 
+		vblur;
+
+	var rotationY = new THREE.Matrix4(),
+		rotationX = new THREE.Matrix4(),
+		translation = new THREE.Matrix4(),
+		matrix = new THREE.Matrix4()
+
+	// get user geolocation
+    GEO_LOCATION.getLocation(uAreHere, 12000);
+
+	// setup
+	init()
+
+	// add lights
+	addLights()
+
+	// add controls
+	addControls()
+
+	// add stars
+	addStars()
+
+	// loop
+	loop()
+
+	// add app controls
+	addAppControls()
+
+
+function init(){
+	
+	var VIEW_ANGLE = 45,
+		ASPECT     = WIDTH / HEIGHT,
+		NEAR       = 0.1,
+		FAR        = 10000
+
+
+	// add/configure main scene
+	scene = new THREE.Scene()
+	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR )
+	camera.position.set( 0, 0, 600 )
+	camera.lookAt( scene.position )
+	scene.add( camera )
+
+
+	// add/configure glow scene
+	glowscene = new THREE.Scene()
+	glowcamera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR );
+	glowcamera.position = camera.position;
+	glowscene.add( glowcamera )
+
+
+	// add/configure renderer
+	renderer = new THREE.WebGLRenderer({ antialias: true })
+	//window.renderer = new THREE.CanvasRenderer({ antialias: true })
+	renderer.setSize( WIDTH, HEIGHT )
+	renderer.shadowMapEnabled = true
+	renderer.shadowMapSoft = true
+
+
+	// create scene
+	group = new THREE.Object3D()
+
+	//  useful resource: http://www.celestiamotherlode.net/catalog/earth.php
+	var earthTexture = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/good-earth/small-bump.jpeg" );
+
+	earthRadius = 90
+	earth = new THREE.Mesh(
+		new THREE.SphereGeometry( earthRadius, 64, 64 ),
+		new THREE.MeshPhongMaterial( { 
+			map: THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-map.jpg' ), 
+			transparency: true, 
+			opacity: 1, 
+			ambient: 0xFFFFFF, 
+			color: 0xFFFFFF, 
+			specular: 0xFFFFFF, 
+			shininess: 5, 
+			perPixel: true, 
+			bumpMap: 
+			earthTexture, 
+			bumpScale: 19, 
+			metal: true 
+		})
+	)
+
+	earth.position.set( 0, 0, 0 )
+	earth.receiveShadow = true
+	earth.castShadow = true
+	group.add( earth )
+
+	//  Check out this really useful resource for understanding the blending modes available in Three.js:
+	//	http://mrdoob.github.com/three.js/examples/webgl_materials_blending_custom.html
+
+	clouds = new THREE.Mesh(
+		new THREE.SphereGeometry( earthRadius + 2, 32, 32 ),
+		new THREE.MeshLambertMaterial({ 
+			map: THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-clouds.png' ),
+			transparent: true,
+			blending: THREE.CustomBlending,
+			blendSrc: THREE.SrcAlphaFactor,
+			blendDst: THREE.SrcColorFactor,
+			blendEquation: THREE.AddEquation
+		})
+	)
+	clouds.position.set( 0, 0, 0 )
+	clouds.receiveShadow = true
+	clouds.castShadow = true
+	// group.add( clouds )	
+
+	scene.add( group )
+
+	atmosphere = new THREE.Mesh(
+		new THREE.SphereGeometry( earthRadius + 4, 32, 32 ),
+		new THREE.MeshPhongMaterial({
+			transparency: true, 
+			opacity: .1, 
+			ambient: 0xFFFFFF, 
+			color: 0xFFFFFF, 
+			specular: 0xFFFFFF, 
+			shininess: 25, 
+			perPixel: true, 
+			// metal: true
+		})
+
+	)
+	atmosphere.position.set( 0, 0, 0 )
+	atmosphere.receiveShadow = true
+	atmosphere.castShadow = true	
+
+	glowscene.add( atmosphere )	
+
+	// add/configure glow composer
+	var renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBufer: false };
+		renderTargetGlow = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );
+		 
+	// 	// Prepare the blur shader passes
+		hblur = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
+		vblur = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
+		 
+		var bluriness = 3;
+		 
+		hblur.uniforms[ "h" ].value = bluriness / window.innerWidth;
+		vblur.uniforms[ "v" ].value = bluriness / window.innerHeight;
+		 
+		// Prepare the glow scene render pass
+		var renderModelGlow = new THREE.RenderPass( glowscene, camera );
+		 
+		// Create the glow composer
+		glowcomposer = new THREE.EffectComposer( renderer, renderTargetGlow );
+		 
+		// Add all the glow passes
+		glowcomposer.addPass( renderModelGlow );
+		glowcomposer.addPass( hblur );
+		glowcomposer.addPass( vblur );
+
+	// add/configure final composer
+	var finalshader = {
+		    uniforms: {
+		        tDiffuse: { type: "t", value: 0, texture: null }, // The base scene buffer
+		        tGlow: { type: "t", value: 1, texture: null } // The glow scene buffer
+		    },
+		 
+		    vertexShader: [
+		        "varying vec2 vUv;",
+		 
+		        "void main() {",
+		 
+		            "vUv = vec2( uv.x, 1.0 - uv.y );",
+		            "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
+		 
+		        "}"
+		    ].join("n"),
+		 
+		    fragmentShader: [
+		        "uniform sampler2D tDiffuse;",
+		        "uniform sampler2D tGlow;",
+		 
+		        "varying vec2 vUv;",
+		 
+		        "void main() {",
+		 
+		            "vec4 texel = texture2D( tDiffuse, vUv );",
+		            "vec4 glow = texture2D( tGlow, vUv );",
+		            "gl_FragColor = texel + vec4(0.5, 0.75, 1.0, 1.0) * glow * 2.0;", // Blend the two buffers together (I colorized and intensified the glow at the same time)
+		 
+		        "}"
+		    ].join("n")
+	};
+
+
+	// First we need to assign the glow composer's output render target to the tGlow sampler2D of our shader
+	finalshader.uniforms[ "tGlow" ].texture = glowcomposer.renderTarget2;
+	// Note that the tDiffuse sampler2D will be automatically filled by the EffectComposer
+	 
+	// Prepare the base scene render pass
+	var renderModel = new THREE.RenderPass( scene, camera );
+	 
+	// Prepare the additive blending pass
+	var finalPass = new THREE.ShaderPass( finalshader );
+	finalPass.needsSwap = true;
+	 
+	// Make sure the additive blending is rendered to the screen (since it's the last pass)
+	finalPass.renderToScreen = true;
+	 
+	// Prepare the composer's render target
+	renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );
+	 
+	// Create the composer
+	finalcomposer = new THREE.EffectComposer( renderer, renderTarget );
+	 
+	// Add all passes
+	finalcomposer.addPass( renderModel );
+	finalcomposer.addPass( finalPass ); 
+
+	$( '#three' ).append( renderer.domElement )
+	
+}
+
+// application control panel  
+function addAppControls(){
+
+	//control panel control
 	$('#flag').click(function(){		
 		$('#control_panel').toggleClass("shown", "hidden")
 	})
@@ -26,313 +264,136 @@ $( document ).ready( function(){
 		$('#nav').removeClass('shown').addClass('hidden_tweets')
 	})
 
-	//callback
-    function uAreHere( x, y ){
-      	userPin = dropPin(Number(x), Number(y), 0xFF00FF )
+}
 
-		group.add( userPin )
-      	
-      	// pins.push( userPin )
+// geolocation callback
+function uAreHere( x, y ){
+  	// add user pin
+  	userPin = dropPin(Number(x), Number(y), 0xFF00FF )
 
-		urh = new THREE.Mesh(
-				textGeo = new THREE.TextGeometry( "You are here", {
+	group.add( userPin )
+  	
+  	// pins.push( userPin )
 
-					size: 12,
-					height: 2,
-					curveSegments: 2,
+	urh = new THREE.Mesh(
+			textGeo = new THREE.TextGeometry( "You are here", {
 
-					font: "helvetiker",
-					weight: "normal",
-					style: "normal",
+				size: 12,
+				height: 2,
+				curveSegments: 2,
 
-					bevelThickness: 2,
-					bevelSize: 1.5,
-					bevelEnabled: true,
+				font: "helvetiker",
+				weight: "normal",
+				style: "normal",
 
-					material: 0,
-					extrudeMaterial: 1
+				bevelThickness: 2,
+				bevelSize: 1.5,
+				bevelEnabled: true,
 
-				}),
-			
-			new THREE.MeshBasicMaterial({ 
-				color: 0xFF00FF,
-				transparent : false,
-			})
-		)
+				material: 0,
+				extrudeMaterial: 1
 
-		textWhy = new THREE.TextGeometry( "Why", { size: 10, height: 5, curveSegments: 6, font: "helvetiker", weight: "normal", style: "normal" });
+			}),
+		
+		new THREE.MeshBasicMaterial({ 
+			color: 0xFF00FF,
+			transparent : false,
+		})
+	)
 
-		// console.log("text", urh)
+}	
 
-		scene.add( textWh )
 
-    }
+// create web socket 
+var ws = new WebSocket("ws://localhost:8000/socket");
 
-    var ws = new WebSocket("ws://localhost:8000/socket");
-    ws.onmessage = function(event) {
-       
-    	var tweet = JSON.parse(event.data)
-  
-    	var noBeliebers = /one less lonely girl/i,
-       	    belieber = noBeliebers.test(tweet.text),
-       	    noLinks = /http/i
-       	    links = noLinks.test(tweet.text)
-       	    noAtMentions = /@/g
-       	    atMention = noAtMentions.test(tweet.text)
-       	    split = tweet.text.split(' ')
+// tweet pins
+ws.onmessage = function(event) {
+   
+	var tweet = JSON.parse(event.data)
 
-   	  if ( belieber === false && split[0] !== 'RT' && links === false ){ //tweet.user.followers_count <= 100 &&
+	var noBeliebers = /one less lonely girl/i,
+   	    belieber = noBeliebers.test(tweet.text),
+   	    noLinks = /http/i
+   	    links = noLinks.test(tweet.text)
+   	    noAtMentions = /@/g
+   	    atMention = noAtMentions.test(tweet.text)
+   	    split = tweet.text.split(' ')
 
-        if ( tweet.geo !== null ){
-       		// console.log("from tweet geo")
+	  if ( belieber === false && split[0] !== 'RT' && links === false ){ //tweet.user.followers_count <= 100 &&
+
+    if ( tweet.geo !== null ){
+   		// console.log("from tweet geo")
+
+       	var lat = tweet.geo.coordinates[0],
+			lon = tweet.geo.coordinates[1],
+			pin = dropPin(lat, lon, 0xFFFFFF, tweet )
+
+		group.add( pin )
+		pins.push( pin )
+
+    } else if ( tweet.place !== null) {
+
+   		var fullname = tweet.place.full_name
+       		fullname = fullname.split(', ')
+
+   		var city = fullname[0],
+   			state = fullname[1],
+   			country = tweet.place.country
+
+   		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?' + city + ',+' + state + ',+' + country + '&sensor=false&callback=?', function(data){
+
+   			// console.log("from place", data)
 
 	       	var lat = tweet.geo.coordinates[0],
 				lon = tweet.geo.coordinates[1],
-				pin = dropPin(lat, lon, 0xFFFFFF, tweet )
+				pin = dropPin(lat, lon, 0xFFFFFF, tweet )					
 
-			group.add( pin )
-			pins.push( pin )
+   			group.add( pin )
+   			pins.push(pin)
 
-        } else if ( tweet.place !== null) {
+   		})
+   	} else if (tweet.user.location !== '' ){
 
-       		var fullname = tweet.place.full_name
-	       		fullname = fullname.split(', ')
+   		var location = tweet.user.location
+    		location = location.replace(',', '+')
+    		location = location.replace(/\s+/, '+')
 
-       		var city = fullname[0],
-       			state = fullname[1],
-       			country = tweet.place.country
+   		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&sensor=false', function(data){
 
-       		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?' + city + ',+' + state + ',+' + country + '&sensor=false&callback=?', function(data){
+   			if( data.status !== "ZERO_RESULTS"){
+       			
+				// console.log(data.status)
 
-       			// console.log("from place", data)
-
-		       	var lat = tweet.geo.coordinates[0],
-					lon = tweet.geo.coordinates[1],
-					pin = dropPin(lat, lon, 0xFFFFFF, tweet )					
+       			var lat = data.results[0].geometry.location.lat,
+       				lon = data.results[0].geometry.location.lng,
+       				pin = dropPin(lat, lon, 0xFFFFFF, tweet )  //CC11
 
        			group.add( pin )
-       			pins.push(pin)
+       			pins.push(pin)		
+       		}
+   				
+   		})
 
-       		})
-       	} else if (tweet.user.location !== '' ){
+   }
 
-       		var location = tweet.user.location
-	    		location = location.replace(',', '+')
-	    		location = location.replace(/\s+/, '+')
+	var tweetString = '<div class="tweet"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
+		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a>'
+		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div></div>'											
+   
+    $('#tweets').prepend(tweetString)	      
 
-       		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&sensor=false', function(data){
+	$('.tweet').first().hide().fadeIn()
 
-       			if( data.status !== "ZERO_RESULTS"){
-	       			
-					// console.log(data.status)
+	// $('.tweet').eq(5) ? $('.tweet').eq(5).fadeOut(1000) : null 	       
 
-	       			var lat = data.results[0].geometry.location.lat,
-	       				lon = data.results[0].geometry.location.lng,
-	       				pin = dropPin(lat, lon, 0xFFFFFF, tweet )  //CC11
+  }
 
-	       			group.add( pin )
-	       			pins.push(pin)		
-	       		}
-       				
-       		})
-
-       }
-
-    	var tweetString = '<div class="tweet"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
-    		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a>'
-    		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div></div>'											
-       
-        $('#tweets').prepend(tweetString)	      
-
-    	$('.tweet').first().hide().fadeIn()
-
-    	// $('.tweet').eq(5) ? $('.tweet').eq(5).fadeOut(1000) : null 	       
-
-	  }
-
-    }
-
-    //setup
-	setupThree()
-
-	//add lights
-	addLights()
-
-	//add controls
-	addControls()
-
-	//add stars
-	addStars()
-
-	window.group = new THREE.Object3D()
-
-	//get user location
-    GEO_LOCATION.getLocation(uAreHere, 12000);
-
-    // textWhy = new THREE.TextGeometry( "Why", { size: 10, height: 5, curveSegments: 6, font: "helvetiker", weight: "normal", style: "normal" });
-
-	//  useful resource: http://www.celestiamotherlode.net/catalog/earth.php
-
-	var earthTexture = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/good-earth/small-bump.jpeg" );
-
-	window.earthRadius = 90
-	window.earth = new THREE.Mesh(
-		new THREE.SphereGeometry( earthRadius, 64, 64 ),
-		new THREE.MeshPhongMaterial( { 
-			map: THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-map.jpg' ), 
-			transparency: true, 
-			opacity: 1, 
-			ambient: 0xFFFFFF, 
-			color: 0xFFFFFF, 
-			specular: 0xFFFFFF, 
-			shininess: 25, 
-			perPixel: true, 
-			bumpMap: 
-			earthTexture, 
-			bumpScale: 19, 
-			metal: true 
-		})
-	)
-
-	earth.position.set( 0, 0, 0 )
-	earth.receiveShadow = true
-	earth.castShadow = true
-	group.add( earth )
-
-	//  Check out this really useful resource for understanding the blending
-	//  modes available in Three.js:
-	//	http://mrdoob.github.com/three.js/examples/webgl_materials_blending_custom.html
-
-	window.clouds = new THREE.Mesh(
-		new THREE.SphereGeometry( earthRadius + 2, 32, 32 ),
-		new THREE.MeshLambertMaterial({ 
-			map: THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-clouds.png' ),
-			transparent: true,
-			blending: THREE.CustomBlending,
-			blendSrc: THREE.SrcAlphaFactor,
-			blendDst: THREE.SrcColorFactor,
-			blendEquation: THREE.AddEquation
-		})
-	)
-	clouds.position.set( 0, 0, 0 )
-	clouds.receiveShadow = true
-	clouds.castShadow = true
-	// group.add( clouds )	
-
-	window.atmosphere = new THREE.Mesh(
-		new THREE.SphereGeometry( earthRadius + 4, 32, 32 )
-
-	)
-	clouds.position.set( 0, 0, 0 )
-	clouds.receiveShadow = true
-	clouds.castShadow = true
-	// group.add( clouds )	
-
-	scene.add( group )
-
-	//  But also, did you want to start out looking at a different part of
-	//  the Earth?
-
-	group.rotation.y = ( -40 ).degreesToRadians()
-	group.rotation.z = (  23 ).degreesToRadians()
-
-	var urlPrefix	= "http://localhost:8000/static/media/";
-	var urls = [ 
-			urlPrefix + "posx.jpeg", 
-			urlPrefix + "negx.jpeg",
-			urlPrefix + "posy.jpeg", 
-			urlPrefix + "negy.jpeg",
-			urlPrefix + "posz.jpeg", 
-			urlPrefix + "negz.jpeg" 
-		]
-	
-	    cubemap = THREE.ImageUtils.loadTextureCube(urls);
-
-		// cubemap.format = THREE.RGBFormat;
-
-    // var shader = THREE.ShaderUtils.lib[ "cube" ];
-    //     shader.uniforms[ "tCube" ].texture = cubemap;
-
-    // var material = new THREE.ShaderMaterial( {
-
-    //       fragmentShader: shader.fragmentShader,
-    //       vertexShader: shader.vertexShader,
-    //       uniforms: shader.uniforms,
-    //       depthWrite: false
-
-    //     });
-
-	var material = new THREE.MeshLambertMaterial({
-	    color: 0xffffff,
-	    envMap: cubemap	
-	  });
-
-	var skybox = new THREE.Mesh( new THREE.CubeGeometry( 5000, 5000, 5000 ), material ) ;
-        skybox.scale.x = -1   
-
-    console.log("skybox", skybox)
-
-    // scene.add(skybox);
-
-	loop()	
-})
-
-
-
-
-function loop(){
-
-	//  Let's rotate the entire group a bit.
-	//  Then we'll also rotate the cloudsTexture slightly more on top of that.
-
-	group.rotation.y  += ( 0.07 ).degreesToRadians()
-	clouds.rotation.y += ( 0.04 ).degreesToRadians()
-
-	if (camera.position.z > 300 ) {
-		camera.position.z -= 1
-	}
-
-
-	if ( pins.length > 0 ) {
-		$.each(pins, function(i){
-			if ( pins[i].dead ){				
-				
-
-				pins[i].children[0].children[1].visible = false
-				// scene.remove( scene.__objects[i + 2] )
-				// delete pins[i].children[0].children[1]
-				// renderer.deallocateObject( pins[i].children[0].children[1] )				
-
-			} else {
-				
-				pins[i].fadeMarker()
-				pins[i].fadeIndicator()
-				pins[i].spike()
-				
-			}
-
-			// console.log(pins[i].dead)
-		})
-	}
-
-	render()
-	controls.update()
-	
-	
-	//  This function will attempt to call loop() at 60 frames per second.
-	//  See  this Mozilla developer page for details:
-	//  https://developer.mozilla.org/en-US/docs/DOM/window.requestAnimationFrame
-	//  And also note that Three.js modifies this function to account for
-	//  different browser implementations.
-	
-	window.requestAnimationFrame( loop )
 }
 
 
-
-
 //  Nesting rotations correctly is an exercise in patience.
-//  Imagine that our marker is standing straight, from the South Pole up to
+//  Imagine that our marker is standing straight, from the Sout	h Pole up to
 //  the North Pole. We then move it higher on the Y-axis so that it peeks
 //  out of the North Pole. Then we need one container for rotating on latitude
 //  and another for rotating on longitude. Otherwise we'd just be rotating our
@@ -408,22 +469,8 @@ function dropPin( latitude, longitude, color, tweet ){
 }
 
 
-
-
-//  Why separate this simple line of code from the loop() function?
-//  So that our controls can also call it separately.
-
-function render(){
-
-	renderer.render( scene, camera )
-}
-
-
-
-
 //  I'll leave this in for the moment for reference, but it seems to be
 //  having some issues ...
-
 function surfacePlot( params ){
 
 	params = cascade( params, {} )
@@ -439,67 +486,6 @@ function surfacePlot( params ){
 
 	return new THREE.Vector3( x, y, z )
 }
-
-
-
-
-function setupThree(){
-	
-	
-	//  First let's create a Scene object.
-	//  This is what every other object (like shapes and even lights)
-	//  will be attached to.
-	//  Notice how our scope is inside this function, setupThree(),
-	//  but we attach our new variable to the Window object
-	//  in order to make it global and accessible to everyone.
-
-	//  An alterative way to do this is to declare the variables in the 
-	//  global scope--which you can see in the example here:
-	//  https://github.com/mrdoob/three.js/
-	//  But this feels more compact and contained, no?
-	
-	window.scene = new THREE.Scene()
-
-	scene.fog = new THREE.FogExp2( 0x000000, 0.00000025 );
-
-	//  And now let's create a Camera object to look at our Scene.
-	//  In order to do that we need to think about some variable first
-	//  that will define the dimensions of our Camera's view.
-	
-	var
-	WIDTH      = window.innerWidth,
-	HEIGHT     = window.innerHeight,
-	VIEW_ANGLE = 45,
-	ASPECT     = WIDTH / HEIGHT,
-	NEAR       = 0.1,
-	FAR        = 10000
-	
-	window.camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR )
-	camera.position.set( 0, 0, 600 )
-	camera.lookAt( scene.position )
-	scene.add( camera )
-
-
-	//  Finally, create a Renderer to render the Scene we're looking at.
-	//  A renderer paints our Scene onto an HTML5 Canvas from the perspective 
-	//  of our Camera.
-	
-	window.renderer = new THREE.WebGLRenderer({ antialias: true })
-	//window.renderer = new THREE.CanvasRenderer({ antialias: true })
-	renderer.setSize( WIDTH, HEIGHT )
-	renderer.shadowMapEnabled = true
-	renderer.shadowMapSoft = true
-
-
-	//  In previous examples I've used the direct JavaScript syntax of
-	//  document.getElementById( 'three' ).appendChild( renderer.domElement )
-	//  but now that we're using the jQuery library in this example we can
-	//  take advantage of it:	
-
-	$( '#three' ).append( renderer.domElement )
-	
-}
-
 
 
 
@@ -522,41 +508,25 @@ function addControls(){
 
 
 
-
 function addLights(){
 	
 	var
 	ambient,
 	directional
 	
-	// //  Let's create an Ambient light so that even the dark side of the 
-	// //  earth will be a bit visible. 
-	
+	// add earth ambient light
 	ambient = new THREE.AmbientLight( 0x666666 )
 	scene.add( ambient )	
 	
-	
-	// //  Now let's create a Directional light as our pretend sunshine.
-	
+	// add earth directional light 
 	directional = new THREE.DirectionalLight( 0xCCCCCC )
 	directional.castShadow = true	
 	scene.add( directional )
 
-	// var dirLight,
-	// 	ambientLight
+	// add glowscene ambient light
+	glowscene.add( new THREE.AmbientLight( 0xffffff ) ); 
 
-	// dirLight = new THREE.DirectionalLight( 0xffffff );
-	// dirLight.position.set( -1, 0, 1 ).normalize();
-	// scene.add( dirLight );
-
-	// ambientLight = new THREE.AmbientLight( 0x000000 );
-	// scene.add( ambientLight );
-
-
-	//  Those lines above are enough to create another working light.
-	//  But we just can't leave well enough alone.
-	//  Check out some of these options properties we can play with.
-
+	// add optional light params
 	directional.position.set( 100, 200, 300 )
 	directional.target.position.copy( scene.position )
 	directional.shadowCameraTop     =  600
@@ -572,62 +542,230 @@ function addLights(){
 }
 
 function addStars(){
-					// stars
 
-				var i, r = 300, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
+	var i, r = 100, starsGeometry = [ new THREE.Geometry(), new THREE.Geometry() ];
 
-				for ( i = 0; i < 250; i ++ ) {
+	for ( i = 0; i < 250; i ++ ) {
 
-					var vertex = new THREE.Vector3();
-					vertex.x = Math.random() * 2 - 1;
-					vertex.y = Math.random() * 2 - 1;
-					vertex.z = Math.random() * 2 - 1;
-					vertex.multiplyScalar( r );
+		var vertex = new THREE.Vector3();
+		vertex.x = Math.random() * 2 - 1;
+		vertex.y = Math.random() * 2 - 1;
+		vertex.z = Math.random() * 2 - 1;
+		vertex.multiplyScalar( r );
 
-					starsGeometry[ 0 ].vertices.push( vertex );
+		starsGeometry[ 0 ].vertices.push( vertex );
 
-				}
+	}
 
-				for ( i = 0; i < 1500; i ++ ) {
+	for ( i = 0; i < 1500; i ++ ) {
 
-					var vertex = new THREE.Vector3();
-					vertex.x = Math.random() * 2 - 1;
-					vertex.y = Math.random() * 2 - 1;
-					vertex.z = Math.random() * 2 - 1;
-					vertex.multiplyScalar( r );
+		var vertex = new THREE.Vector3();
+		vertex.x = Math.random() * 2 - 1;
+		vertex.y = Math.random() * 2 - 1;
+		vertex.z = Math.random() * 2 - 1;
+		vertex.multiplyScalar( r );
 
-					starsGeometry[ 1 ].vertices.push( vertex );
+		starsGeometry[ 1 ].vertices.push( vertex );
 
-				}
+	}
 
-				var stars;
-				var starsMaterials = [
-					new THREE.ParticleBasicMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
-					new THREE.ParticleBasicMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
-					new THREE.ParticleBasicMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
-					new THREE.ParticleBasicMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
-					new THREE.ParticleBasicMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
-					new THREE.ParticleBasicMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
-				];
+	console.log("star geometry", starsGeometry)
 
-				for ( i = 10; i < 30; i ++ ) {
+	var stars;
+	var starsMaterials = [
+		new THREE.ParticleBasicMaterial( { color: 0x555555, size: 2, sizeAttenuation: false } ),
+		new THREE.ParticleBasicMaterial( { color: 0x555555, size: 1, sizeAttenuation: false } ),
+		new THREE.ParticleBasicMaterial( { color: 0x333333, size: 2, sizeAttenuation: false } ),
+		new THREE.ParticleBasicMaterial( { color: 0x3a3a3a, size: 1, sizeAttenuation: false } ),
+		new THREE.ParticleBasicMaterial( { color: 0x1a1a1a, size: 2, sizeAttenuation: false } ),
+		new THREE.ParticleBasicMaterial( { color: 0x1a1a1a, size: 1, sizeAttenuation: false } )
+	];
 
-					stars = new THREE.ParticleSystem( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
+	for ( i = 10; i < 30; i ++ ) {
 
-					stars.rotation.x = Math.random() * 6;
-					stars.rotation.y = Math.random() * 6;
-					stars.rotation.z = Math.random() * 6;
+		stars = new THREE.ParticleSystem( starsGeometry[ i % 2 ], starsMaterials[ i % 6 ] );
 
-					s = i * 10;
-					stars.scale.set( s, s, s );
+		stars.rotation.x = Math.random() * 6;
+		stars.rotation.y = Math.random() * 6;
+		stars.rotation.z = Math.random() * 6;
 
-					stars.matrixAutoUpdate = false;
-					stars.updateMatrix();
+		s = i * 10;
+		stars.scale.set( s, s, s );
 
-					scene.add( stars );
+		stars.matrixAutoUpdate = false;
+		stars.updateMatrix();
 
-				}
+		scene.add( stars );
+
+	}
+}
+
+function loop(){
+
+	//  Let's rotate the entire group a bit.
+	//  Then we'll also rotate the cloudsTexture slightly more on top of that.
+
+	group.rotation.y  += ( 0.02 ).degreesToRadians()
+	clouds.rotation.y += ( 0.01 ).degreesToRadians()
+
+	// camera.position.z > 300 ? camera.position.z -= 1 : null
+
+	if ( camera.position.z > 300 ){
+		camera.position.z -= 1
+		camera.position.y += 1
+	}
+
+	if ( userPin !== undefined ){
+		console.log("geo", userPin.geo.lon)
+		// rotationY.makeRotationY(userPin.geo.lon);
+		// rotationX.makeRotationX(userPin.geo.lat);
+		// translation.makeTranslation(0, 0, earthRadius + 100);
+		// matrix.multiply(rotationY, rotationX).multiplySelf(translation);
+		// camera.matrix.identity();
+		// camera.applyMatrix(matrix);
+	}
+
+	if ( pins.length > 0 ) {
+		$.each(pins, function(i){
+			if ( pins[i].dead ){				
+				
+
+				pins[i].children[0].children[1].visible = false
+				// scene.remove( scene.__objects[i + 2] )
+				// delete pins[i].children[0].children[1]
+				// renderer.deallocateObject( pins[i].children[0].children[1] )				
+
+			} else {
+				
+				pins[i].fadeMarker()
+				pins[i].fadeIndicator()
+				pins[i].spike()
+				
+			}
+
+		})
+	}
+	
+	//  loop() sSee this Mozilla developer page for details:
+	//  https://developer.mozilla.org/en-US/docs/DOM/window.requestAnimationFrame
+	
+	requestAnimationFrame( loop )
+	render()
+	controls.update()
 }
 
 
+function render(){
 
+	renderer.render( scene, camera )
+	// glowcomposer.render( 0.1 );
+ //    finalcomposer.render( 0.1 );
+
+}
+
+
+	// add pins 
+	ws.onmessage();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// function createScene(){
+
+// 	group = new THREE.Object3D()
+
+// 	//  useful resource: http://www.celestiamotherlode.net/catalog/earth.php
+// 	var earthTexture = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/good-earth/small-bump.jpeg" );
+
+// 	earthRadius = 90
+// 	earth = new THREE.Mesh(
+// 		new THREE.SphereGeometry( earthRadius, 64, 64 ),
+// 		new THREE.MeshPhongMaterial( { 
+// 			map: THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-map.jpg' ), 
+// 			transparency: true, 
+// 			opacity: 1, 
+// 			ambient: 0xFFFFFF, 
+// 			color: 0xFFFFFF, 
+// 			specular: 0xFFFFFF, 
+// 			shininess: 5, 
+// 			perPixel: true, 
+// 			bumpMap: 
+// 			earthTexture, 
+// 			bumpScale: 19, 
+// 			metal: true 
+// 		})
+// 	)
+
+// 	earth.position.set( 0, 0, 0 )
+// 	earth.receiveShadow = true
+// 	earth.castShadow = true
+// 	group.add( earth )
+
+// 	//  Check out this really useful resource for understanding the blending
+// 	//  modes available in Three.js:
+// 	//	http://mrdoob.github.com/three.js/examples/webgl_materials_blending_custom.html
+
+// 	clouds = new THREE.Mesh(
+// 		new THREE.SphereGeometry( earthRadius + 2, 32, 32 ),
+// 		new THREE.MeshLambertMaterial({ 
+// 			map: THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-clouds.png' ),
+// 			transparent: true,
+// 			blending: THREE.CustomBlending,
+// 			blendSrc: THREE.SrcAlphaFactor,
+// 			blendDst: THREE.SrcColorFactor,
+// 			blendEquation: THREE.AddEquation
+// 		})
+// 	)
+// 	clouds.position.set( 0, 0, 0 )
+// 	clouds.receiveShadow = true
+// 	clouds.castShadow = true
+// 	// group.add( clouds )	
+
+// 	atmosphere = new THREE.Mesh(
+// 		new THREE.SphereGeometry( earthRadius + 4, 32, 32 ),
+// 		new THREE.MeshPhongMaterial({
+// 			transparency: true, 
+// 			opacity: .1, 
+// 			ambient: 0xFFFFFF, 
+// 			color: 0xFFFFFF, 
+// 			specular: 0xFFFFFF, 
+// 			shininess: 25, 
+// 			perPixel: true, 
+// 			// metal: true
+// 		})
+
+// 	)
+// 	atmosphere.position.set( 0, 0, 0 )
+// 	atmosphere.receiveShadow = true
+// 	atmosphere.castShadow = true	
+
+// 	glowscene.add( atmosphere )
+
+
+// 	//  But also, did you want to start out looking at a different part of
+// 	//  the Earth?
+
+// 	group.rotation.y = ( -40 ).degreesToRadians()
+// 	group.rotation.z = (  23 ).degreesToRadians()
+
+// 	scene.add( group )
+
+// }
