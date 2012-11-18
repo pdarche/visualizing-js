@@ -35,15 +35,22 @@
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/jquery.js"></script>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/skip.js"></script>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/three.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/shaderExtras.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/shaderPass.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/renderPass.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/effectsComposer.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/application.js"></script>	
-		<script src="http://localhost:8000/static/scripts/helvetiker_regular.typeface.js"></script>
-		<script src="http://localhost:8000/static/scripts/helvetiker_bold.typeface.js"></script>
+		<script charset="utf-8" src="http://localhost:8000/static/scripts/ShaderExtras.js"></script>
+		<script src="http://localhost:8000/static/scripts/controls/FlyControls.js"></script>
+		<script src="http://localhost:8000/static/scripts/shaders/CopyShader.js"></script>
+		<script src="http://localhost:8000/static/scripts/shaders/FilmShader.js"></script>
+		<script src="http://localhost:8000/static/scripts/postprocessing/EffectComposer.js"></script>
+		<script src="http://localhost:8000/static/scripts/postprocessing/ShaderPass.js"></script>
+		<script src="http://localhost:8000/static/scripts/postprocessing/MaskPass.js"></script>
+		<script src="http://localhost:8000/static/scripts/postprocessing/shaderPass.js"></script>	
+		<script src="http://localhost:8000/static/scripts/postprocessing/RenderPass.js"></script>
+		<script src="http://localhost:8000/static/scripts/postprocessing/FilmPass.js"></script>
+		<script src="http://localhost:8000/static/scripts/typefaces/helvetiker_regular.typeface.js"></script>
+		<script src="http://localhost:8000/static/scripts/typefaces/helvetiker_bold.typeface.js"></script>
+		<script src="http://localhost:8000/static/scripts/application.js"></script>	
+
 		<script type="text/javascript">
-			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
+			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/one_more_try.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
 				songIndex = 0,
 				audioPlayer = document.getElementById('audio_player');
 

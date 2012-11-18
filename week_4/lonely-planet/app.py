@@ -12,8 +12,8 @@ GLOBALS={
 (options, args) = twitstream.parser.parse_args()
 
 options.engine = 'tornado'    
-options.username = 'pdarche'
-options.password = 'Morgortbort1!'
+options.username = 'lonely_tweet'
+options.password = 'so_ronely'
 
 
 if len(args) < 1:
@@ -70,6 +70,10 @@ class Announcer(tornado.web.RequestHandler):
 
 stream = twitstream.twitstream(method, options.username, options.password, testFunction, 
             defaultdata=args[1:], debug=options.debug, engine=options.engine)   
+
+settings = dict(
+template_path=os.path.join(os.path.dirname(__file__), "static/tempates"),
+)
 
 if __name__ == "__main__":
 

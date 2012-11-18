@@ -47,6 +47,11 @@ body
 	background-color:rgba(255,255,255,.7);
 }
 
+.location {
+	font-size: 10px;
+	float:right;
+}
+
 .followers{
 	font-size:10px;
 	line-height:90%;
@@ -124,7 +129,7 @@ h1{
 
 .option-wrapper div{
 	float:left;
-	width:22%;
+	width:25%;
 	padding:0px 5px;
 	margin:5px 0px ;
 	text-align:center;
