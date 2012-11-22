@@ -414,7 +414,6 @@ var ws = new WebSocket("ws://localhost:8000/socket");
 ws.onmessage = function(event) {
    
 	var tweet = JSON.parse(event.data)
-
 	window.finalLocation
 
 	var noBeliebers = /one less lonely girl/i,
@@ -489,14 +488,63 @@ ws.onmessage = function(event) {
 	   		})
    		}
 
+   	// console.log("tweet",tweet)
 
-	var tweetString = '<div class="tweet"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
+	var tweetString = '<div class="tweet" id="' + tweet.id_str + '"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
 		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a><span class="location">' + finalLocation + '</span>'
-		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div></div>'											
+		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div>'
+		tweetString += '<div class="reply"><textarea cols="40" rows="6" class="reply-input" placeholder="reply to @' + tweet.user.screen_name + ' "></textarea><button class="reply-button">tweet</button></div></div>'											
  		
  	finalLocation = ''  
 
-    $('#tweets').prepend(tweetString)	      
+ 	$('#tweets').prepend(tweetString)
+
+ 	if ( $('#authenticated').html() !== "None") {
+ 		var tweetStr = '#' + tweet.id_str
+
+	    $(tweetStr).click(function(){
+	    	console.log(tweetStr)
+	    	$(this).css('width', '655px').delay(450).queue(function(){
+	    		$(this).find('.reply').fadeIn();
+	    		$(this).dequeue()	
+	    	})
+
+	    	$(this).find('textarea').focus(function(){
+
+	    		$(this).val( '@' + tweet.user.screen_name )
+	    		// console.log(dataString)
+
+	    		$('.reply-button').click(function(){
+					var dataString = $(this).prev().val()
+					
+					$.ajax({
+						type: "GET",
+						url: "http://localhost:8000/post",
+						data: dataString,
+						success: function(data){
+							console.log(data)
+						},
+						error: function(data){
+							console.log(data)
+						}
+					})
+				})
+	    	})
+
+			//if user textarea value is not nil				
+
+
+	    })
+
+	    $('.tweet').mouseleave(function(){
+	    	$(this).find('.reply').fadeOut().queue(function(){
+	    		$(this).parent().css('width', '300px');
+	    		$(this).dequeue()
+	    	})
+	    })
+	}
+
+    $('.tweets').size() > 50 ? $('.tweet:last-child').remove() : null
 
     $('.tweet').hover(function(){
 		prepend = false
@@ -510,8 +558,6 @@ ws.onmessage = function(event) {
     	$('.tweet').fadeIn()
     	$('.tweet').first().hide().fadeIn()
     }
-
-	// $('.tweet').eq(5) ? $('.tweet').eq(5).fadeOut(1000) : null
 
   }
 

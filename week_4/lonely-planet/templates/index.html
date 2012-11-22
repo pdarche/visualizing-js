@@ -4,8 +4,7 @@
 		<meta http-equiv="content-type" content="charset=utf-8" />
 		<link rel="stylesheet" type="text/css" href="http://localhost:8000/static/styles/base.css" />
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/geolocation.js"></script>	
-		<title>Three.js template</title>
-
+		<title>Lonely Planet</title>
 	</head>
 	<body>
 		<audio id="audio_player"autoplay="autoplay"><source src="http://localhost:8000/static/media/mad_world.mp3" type="audio/mp3"></audio>
@@ -32,6 +31,20 @@
 				</div>
 			</div>
 		</div>
+		<div id="tw_background">
+			<div>
+				<div id="tw_container">
+					<div id="tw_wrapper">
+						<p>
+							connect to twitter to respond to tweets
+						</p>
+						<button id="yes_tw" class="tw_button">Connect</button>	
+						<button id="no_tw" class="tw_button">No Thanks</button>	
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="authenticated">{{ authenticated }}</div>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/jquery.js"></script>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/skip.js"></script>
 		<script charset="utf-8" src="http://localhost:8000/static/scripts/three.js"></script>
@@ -50,6 +63,21 @@
 		<script src="http://localhost:8000/static/scripts/application.js"></script>	
 
 		<script type="text/javascript">
+
+			if ( $('#authenticated').html() === "None") {
+				
+				$('#tw_background').show()
+
+				$('#yes_tw').click(function(){
+					window.location = 'http://localhost:8000/auth'
+				})
+
+				$('#no_tw').click(function(){
+					$('#tw_background').remove()  
+				})				
+
+			} 
+
 			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/one_more_try.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
 				songIndex = 0,
 				audioPlayer = document.getElementById('audio_player');
@@ -58,6 +86,7 @@
 				audioPlayer.src = songPaths[songIndex];
 				songIndex !== 3 ? songIndex++ : songIndex = 0;
 			})
+
 		</script>		
 	</body>
 </html>

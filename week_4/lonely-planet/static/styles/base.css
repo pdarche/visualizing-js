@@ -18,7 +18,7 @@ body
 	background-color: rgba(255,255,255, .2);
 	display:inline-block;
 	z-index: 1000;
-	border-right:1px solid white;
+	/*border-right:1px solid white;*/
 }
 
 .img {
@@ -35,12 +35,14 @@ body
 
 .tweet{
 	background-color:rgba(255,255,255,.4);
+	display:inline-block;
+	margin: 10px 10px 0px 15px;
 	position:relative;
 	padding:10px;
 	width:300px;
-	margin: 10px 10px 0px 15px;
 	-webkit-border-radius:5px;
-	display:inline-block;
+	-webkit-transition: all .5s;
+
 }
 
 .tweet:hover{
@@ -56,6 +58,22 @@ body
 	font-size:10px;
 	line-height:90%;
 	margin-bottom:5px;
+}
+
+.reply {
+	display: none;
+	float:right;
+}
+
+.reply-input {
+	display: block;
+	border-radius:5px;
+	padding:10px;
+}
+
+.reply-button{
+	display:block;
+	float:right;
 }
 
 .user-name{
@@ -187,8 +205,51 @@ h1{
 #three
 {
 	position: absolute;
-	/*margin-top:60px;*/
 	width:100%;
 	height:100%;
 }
 
+#tw_background{
+	background-color: rgba(100,100,100, .6);
+	display:none;
+	height:100%;
+	position: absolute;
+	width:100%;
+}
+
+#tw_container{
+	background-color: white;
+	display: block;
+	height: 300px;
+	margin: 200px auto;
+	position: relative;
+	width:400px;
+	padding:1px;
+	-webkit-border-radius: 5px;
+} 
+
+#tw_container h2{
+	position: relative;
+	text-align: center;
+}
+
+#tw_wrapper{	
+	display:block;
+	width: 320px;
+	height: 160px;
+	margin: 70px auto;
+	position:relative;
+	text-align: center;
+}
+
+#tw_container button{
+	/*border:0px;*/
+	font-size:20px;
+	height:50px;
+	width:150px;
+	border-radius:5px;
+}
+
+#tw_container p {
+	position: relative;
+}
