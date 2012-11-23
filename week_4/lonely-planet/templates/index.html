@@ -1,92 +1,13 @@
-<!DOCTYPE html>
-<html>
-	<head>
-		<meta http-equiv="content-type" content="charset=utf-8" />
-		<link rel="stylesheet" type="text/css" href="http://localhost:8000/static/styles/base.css" />
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/geolocation.js"></script>	
-		<title>Lonely Planet</title>
-	</head>
-	<body>
-		<!-- <audio id="audio_player"autoplay="autoplay"><source src="http://localhost:8000/static/media/mad_world.mp3" type="audio/mp3"></audio> -->
-		<div id="three"></div>
-		<div id="nav" class="shown">
-			<h1>Lonely Planet</h1>
-			<div id="tweets"></div>
+<html> 
+<head>
+	<title>Lonely Planet</title> 
+</head>
+	<body> 
+		<div>
+			<a href="/login">Connect to Twitter</a>
+		</div> 
+		<div>
+			<a href="/home">No thanks</a>
 		</div>
-		<div id="control_panel" class="hidden">
-			<div id="flag"></div>
-			<div id="controls">
-				<div id="control_title">Controls</div>
-				<div id="control_wrapper">
-					<div class="option-wrapper">
-						<div class="option_type">Tweets</div>
-						<div id="show_tweets" class="option-one option active">Show</div>
-						<div id="hide_tweets" class="option-two option">Hide</div>
-					</div>
-					<div class="option-wrapper">
-						<div class="option_type">Earth</div>
-						<div id="show_geog" class="option-one option active">Geo</div>
-						<div id="show_borders" class="option-two option">Borders</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		<div id="tw_background">
-			<div>
-				<div id="tw_container">
-					<div id="tw_wrapper">
-						<p>
-							connect to twitter to respond to tweets
-						</p>
-						<button id="yes_tw" class="tw_button">Connect</button>	
-						<button id="no_tw" class="tw_button">No Thanks</button>	
-					</div>
-				</div>
-			</div>
-		</div>
-		<div id="authenticated">{{ authenticated }}</div>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/jquery.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/skip.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/three.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/ShaderExtras.js"></script>
-		<script src="http://localhost:8000/static/scripts/controls/FlyControls.js"></script>
-		<script src="http://localhost:8000/static/scripts/shaders/CopyShader.js"></script>
-		<script src="http://localhost:8000/static/scripts/shaders/FilmShader.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/EffectComposer.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/ShaderPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/MaskPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/shaderPass.js"></script>	
-		<script src="http://localhost:8000/static/scripts/postprocessing/RenderPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/FilmPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/typefaces/helvetiker_regular.typeface.js"></script>
-		<script src="http://localhost:8000/static/scripts/typefaces/helvetiker_bold.typeface.js"></script>
-		<script src="http://localhost:8000/static/scripts/application.js"></script>	
-
-		<script type="text/javascript">
-
-			if ( $('#authenticated').html() === "None") {
-				
-				$('#tw_background').show()
-
-				$('#yes_tw').click(function(){
-					window.location = 'http://localhost:8000/auth'
-				})
-
-				$('#no_tw').click(function(){
-					$('#tw_background').remove()  
-				})				
-
-			} 
-
-			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/one_more_try.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
-				songIndex = 0,
-				audioPlayer = document.getElementById('audio_player');
-
-			$('#audio_player').on('ended', function(){
-				audioPlayer.src = songPaths[songIndex];
-				songIndex !== 3 ? songIndex++ : songIndex = 0;
-			})
-
-		</script>		
-	</body>
+	</body> 
 </html>

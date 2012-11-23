@@ -414,7 +414,7 @@ var ws = new WebSocket("ws://localhost:8000/socket");
 ws.onmessage = function(event) {
    
 	var tweet = JSON.parse(event.data)
-	window.finalLocation
+	// window.finalLocation = null
 
 	var noBeliebers = /one less lonely girl/i,
    	    belieber = noBeliebers.test(tweet.text),
@@ -427,17 +427,23 @@ ws.onmessage = function(event) {
 	if ( belieber === false && split[0] !== 'RT' && links === false ){ //tweet.user.followers_count <= 100 &&
 
     	if ( tweet.geo !== null ){
-   		// console.log("from tweet geo")
 
 	       	var lat = tweet.geo.coordinates[0],
 				lon = tweet.geo.coordinates[1],
 				pin = dropPin(lat, lon, 0xFFFFFF, tweet )
 
-			group.add( pin )
-			pins.push( pin )
 
-			finalLocation = 'Lat: ' + lat + ' lon: ' + lon
-			console.log("tweet geo", finalLocation)
+			$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + lat + ',+' + lon + '&sensor=false&callback=?', function(data){
+
+				var finalLocation = data.results[0].formatted_address
+				console.log("returned from geo: ", data.results)
+				console.log(" ")
+
+				prependTweet(tweet, finalLocation)
+				group.add( pin )
+				pins.push( pin )
+
+			})
 
     	} else if ( tweet.place !== null) {
 
@@ -448,21 +454,22 @@ ws.onmessage = function(event) {
 	   			state = fullname[1],
 	   			country = tweet.place.country
 
-	   		finalLocation = tweet.place.full_name
-	   		console.log("tweet place", finalLocation)
+	   		console.log("tweet place raw: ", tweet.place.full_name)
 
 	   		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?' + city + ',+' + state + ',+' + country + '&sensor=false&callback=?', function(data){
 
-	   			// console.log("from place", data)
+	   			console.log("returned from place", data)
+	   			console.log(" ")
 
 		       	var lat = tweet.geo.coordinates[0],
 					lon = tweet.geo.coordinates[1],
 					pin = dropPin(lat, lon, 0xFFFFFF, tweet )					
 
-	   			group.add( pin )
-	   			pins.push(pin)
+				var finalLocation = data.results[0].formatted_address
 
-	   			finalLocation = tweet.place.full_name
+				prependTweet(tweet, finalLocation)
+	   			group.add( pin )
+	   			pins.push( pin )
 
 	   		})
 	   	} else if (tweet.user.location !== '' ){
@@ -470,6 +477,8 @@ ws.onmessage = function(event) {
 	   		var location = tweet.user.location
 	    		location = location.replace(',', '+')
 	    		location = location.replace(/\s+/, '+')
+
+	    	console.log("from user location: ", tweet.user.location)
 
 	   		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&sensor=false', function(data){
 
@@ -479,88 +488,93 @@ ws.onmessage = function(event) {
 	       				lon = data.results[0].geometry.location.lng,
 	       				pin = dropPin(lat, lon, 0xFFFFFF, tweet )  //CC11
 
-	       			finalLocation = String(data.results[0].address_components[0].short_name + ', ' + data.results[0].address_components[1].short_name)
+	       			var finalLocation = data.results[0].formatted_address
+
+					console.log("returned final location: ", data.results[0].formatted_address)
+	   				console.log(" ")
 
 	       			group.add( pin )
-	       			pins.push(pin)		
+	       			pins.push( pin )
+	       			prependTweet(tweet, finalLocation)	       					
 	       		}
 	   				
 	   		})
    		}
 
-   	// console.log("tweet",tweet)
-
-	var tweetString = '<div class="tweet" id="' + tweet.id_str + '"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
-		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a><span class="location">' + finalLocation + '</span>'
-		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div>'
-		tweetString += '<div class="reply"><textarea cols="40" rows="6" class="reply-input" placeholder="reply to @' + tweet.user.screen_name + ' "></textarea><button class="reply-button">tweet</button></div></div>'											
- 		
- 	finalLocation = ''  
-
- 	$('#tweets').prepend(tweetString)
-
- 	if ( $('#authenticated').html() !== "None") {
- 		var tweetStr = '#' + tweet.id_str
-
-	    $(tweetStr).click(function(){
-	    	console.log(tweetStr)
-	    	$(this).css('width', '655px').delay(450).queue(function(){
-	    		$(this).find('.reply').fadeIn();
-	    		$(this).dequeue()	
-	    	})
-
-	    	$(this).find('textarea').focus(function(){
-
-	    		$(this).val( '@' + tweet.user.screen_name )
-	    		// console.log(dataString)
-
-	    		$('.reply-button').click(function(){
-					var dataString = $(this).prev().val()
-					
-					$.ajax({
-						type: "GET",
-						url: "http://localhost:8000/post",
-						data: dataString,
-						success: function(data){
-							console.log(data)
-						},
-						error: function(data){
-							console.log(data)
-						}
-					})
-				})
-	    	})
-
-			//if user textarea value is not nil				
-
-
-	    })
-
-	    $('.tweet').mouseleave(function(){
-	    	$(this).find('.reply').fadeOut().queue(function(){
-	    		$(this).parent().css('width', '300px');
-	    		$(this).dequeue()
-	    	})
-	    })
-	}
-
-    $('.tweets').size() > 50 ? $('.tweet:last-child').remove() : null
-
-    $('.tweet').hover(function(){
-		prepend = false
-	}, function(){
-		prepend = true
-	})
-
-    if( !prepend ){
-    	$('.tweet').first().hide()
-    } else{
-    	$('.tweet').fadeIn()
-    	$('.tweet').first().hide().fadeIn()
-    }
-
   }
 
+}
+
+function prependTweet(tweet, location){
+	var tweetString = '<div class="tweet" id="' + tweet.id_str + '"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
+		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a><span class="location">' + location + '</span>'
+		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div>'
+		tweetString += '<div class="reply"><textarea cols="40" rows="6" class="reply-input" placeholder="reply to @' + tweet.user.screen_name + ' "></textarea><button class="reply-button">tweet</button></div></div>'											
+
+		$('#tweets').prepend(tweetString)
+
+		if ( $('#authenticated').html() !== "None") {
+	 		var tweetStr = '#' + tweet.id_str
+
+		    $(tweetStr).click(function(){
+		    	$(this).css('width', '655px').delay(450).queue(function(){
+		    		$(this).find('.reply').fadeIn();
+		    		$(this).dequeue()	
+		    	})
+
+		    	$(this).find('textarea').focus(function(){
+
+		    		$(this).val( '@' + tweet.user.screen_name )
+
+		    		$('.reply-button').click(function(){
+						var dataString = 'data=' + $(this).prev().val(),
+							button = $(this)
+						
+						$.ajax({
+							type: "GET",
+							url: "http://127.0.0.1:8000/post",
+							data: dataString,
+							success: function(data){
+								console.log(data)
+								button.hide()
+
+							},
+							error: function(data){
+								console.log(data)
+							}
+						})
+					})
+		    	})		
+
+
+		    })
+
+		    $('.tweet').mouseleave(function(){
+		    	$(this).find('.reply').fadeOut().queue(function(){
+		    		$(this).parent().css('width', '300px');
+		    		$(this).dequeue()
+		    	})
+		    })
+		}
+
+		//if there are more than 50 tweets, remove the last one 
+	    $('.tweet').size() > 50 ? $('.tweet:last-child').remove() : null
+
+	    //if user is hovering over tweets stop new tweets from prepending
+	    $('.tweet').hover(function(){
+			prepend = false
+			controls.enabled = false
+		}, function(){
+			prepend = true
+			controls.enabled = true
+		})
+
+	    if( !prepend ){
+	    	$('.tweet').first().hide()
+	    } else{
+	    	$('.tweet').fadeIn()
+	    	$('.tweet').first().hide().fadeIn()
+	    }
 }
 
 
@@ -634,8 +648,6 @@ function dropPin( latitude, longitude, color, tweet ){
 		}
 
 	}
-
-	// console.log(scene)
 
 	return group2
 }

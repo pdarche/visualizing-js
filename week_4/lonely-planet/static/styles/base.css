@@ -67,8 +67,10 @@ body
 
 .reply-input {
 	display: block;
+	border:1px solid gray;
 	border-radius:5px;
 	padding:10px;
+	z-index: 1000;
 }
 
 .reply-button{

@@ -47,7 +47,8 @@ def testFunction(status):
 
 class IndexHandler(tornado.web.RequestHandler):
     def get(self):
-        self.render('home.html')
+        self.render('index.html')
+
 
 class MainHandler(tornado.web.RequestHandler):
     def get(self):   
@@ -55,16 +56,8 @@ class MainHandler(tornado.web.RequestHandler):
         self.set_header("Access-Control-Allow-Credentials", "true")
         self.set_header("Access-Control-Allow-Methods", "GET")        
 
-        # global authenticated
-        # if authenticated:
-        #     auth = "yerp"
-        # else:  
-        #     auth = "nope"
-
-        # authenticated = False
-
-        test = self.get_secure_cookie('oauth_token')        
-        self.render( 'index.html', authenticated = test ) 
+        token = self.get_secure_cookie('oauth_token')        
+        self.render( 'planet.html', authenticated=token ) 
 
 
 class ClientSocket(websocket.WebSocketHandler):
@@ -105,18 +98,16 @@ class TwitterHandler(tornado.web.RequestHandler,
         self.set_secure_cookie('oauth_token', user['access_token']['key']) 
         self.set_secure_cookie('oauth_secret', user['access_token']['secret'])
 
-        self.set_header("Access-Control-Allow-Origin", "http://localhost:8000")
-        self.set_header("Access-Control-Allow-Credentials", "true")
-        self.set_header("Access-Control-Allow-Methods", "GET")
-        self.render( 'index.html', authenticated=auth )
+        self.redirect('/planet')
         
 
 class PostHandler(tornado.web.RequestHandler, tornado.auth.TwitterMixin):
     @tornado.web.asynchronous
-    def post(self):
+    def get(self):
         oAuthToken = self.get_secure_cookie('oauth_token')
         oAuthSecret = self.get_secure_cookie('oauth_secret') 
         userID = self.get_secure_cookie('user_id')
+        text = self.get_argument("data")
 
         if oAuthToken and oAuthSecret:  
             accessToken = {
@@ -125,7 +116,7 @@ class PostHandler(tornado.web.RequestHandler, tornado.auth.TwitterMixin):
             }
             self.twitter_request(
                 "/statuses/update",
-                post_args={"status": "Testing 128 thousamn"},
+                post_args={"status": text},
                 access_token=accessToken,
                 callback=self.async_callback(self._on_post))
 
@@ -134,7 +125,7 @@ class PostHandler(tornado.web.RequestHandler, tornado.auth.TwitterMixin):
             # Call failed; perhaps missing permission?
             self.authorize_redirect()
             return
-        self.finish("Posted a message!")
+        self.finish("success")
 
 stream = twitstream.twitstream(method, options.username, options.password, testFunction, 
             defaultdata=args[1:], debug=options.debug, engine=options.engine)   
@@ -151,7 +142,7 @@ if __name__ == "__main__":
 	app = tornado.web.Application(
 		handlers = [
             (r"/", IndexHandler),
-            (r"/home", MainHandler),
+            (r"/planet", MainHandler),
             (r"/login", TwitterHandler),
             (r"/post", PostHandler),
             (r"/socket", ClientSocket),
