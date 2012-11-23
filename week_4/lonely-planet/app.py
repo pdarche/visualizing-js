@@ -45,9 +45,13 @@ def testFunction(status):
             # print "%s:\t%s\n" % (status.get('user', {}).get('screen_name'), status.get('text'))	
 
 
+class IndexHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.render('home.html')
+
 class MainHandler(tornado.web.RequestHandler):
     def get(self):   
-        self.set_header("Access-Control-Allow-Origin", "http://localhost:8000")
+        self.set_header("Access-Control-Allow-Origin", "*")
         self.set_header("Access-Control-Allow-Credentials", "true")
         self.set_header("Access-Control-Allow-Methods", "GET")        
 
@@ -62,6 +66,7 @@ class MainHandler(tornado.web.RequestHandler):
         test = self.get_secure_cookie('oauth_token')        
         self.render( 'index.html', authenticated = test ) 
 
+
 class ClientSocket(websocket.WebSocketHandler):
     def open(self):
         GLOBALS['sockets'].append(self)
@@ -69,11 +74,11 @@ class ClientSocket(websocket.WebSocketHandler):
         if twitUser != None:                
             GLOBALS['users'].append(twitUser)
         print "WebSocket opened"
-        print GLOBALS['users']
 
     def on_close(self):
         print "WebSocket closed"
         GLOBALS['sockets'].remove(self)
+
 
 class Announcer(tornado.web.RequestHandler):
     def get(self, *args, **kwargs):
@@ -99,36 +104,29 @@ class TwitterHandler(tornado.web.RequestHandler,
         self.set_secure_cookie('user_id', str(user['id'])) 
         self.set_secure_cookie('oauth_token', user['access_token']['key']) 
         self.set_secure_cookie('oauth_secret', user['access_token']['secret'])
-        
-        # global twitUser
-        # twitUser = user
-        # global authenticated
-        # authenticated = True
-
-        # if authenticated:
-        #     auth = "yerp"
-        # else:
-        #     auth = "nope"
 
         self.set_header("Access-Control-Allow-Origin", "http://localhost:8000")
         self.set_header("Access-Control-Allow-Credentials", "true")
         self.set_header("Access-Control-Allow-Methods", "GET")
-        self.render( 'index.html', authenticated = auth )
+        self.render( 'index.html', authenticated=auth )
         
 
-class PostHandler(tornado.web.RequestHandler,
-                  tornado.auth.TwitterMixin):
+class PostHandler(tornado.web.RequestHandler, tornado.auth.TwitterMixin):
     @tornado.web.asynchronous
-    def get(self):
+    def post(self):
         oAuthToken = self.get_secure_cookie('oauth_token')
         oAuthSecret = self.get_secure_cookie('oauth_secret') 
         userID = self.get_secure_cookie('user_id')
 
-        if oAuthToken and oAuthSecret:
+        if oAuthToken and oAuthSecret:  
+            accessToken = {
+                'key': oAuthToken,
+                'secret': oAuthSecret 
+            }
             self.twitter_request(
                 "/statuses/update",
-                post_args={"status": "Testing, Testing, 128"},
-                access_token=twitUser["access_token"],
+                post_args={"status": "Testing 128 thousamn"},
+                access_token=accessToken,
                 callback=self.async_callback(self._on_post))
 
     def _on_post(self, new_entry):
@@ -152,8 +150,9 @@ if __name__ == "__main__":
 
 	app = tornado.web.Application(
 		handlers = [
-            (r"/", MainHandler),
-            (r"/auth", TwitterHandler),
+            (r"/", IndexHandler),
+            (r"/home", MainHandler),
+            (r"/login", TwitterHandler),
             (r"/post", PostHandler),
             (r"/socket", ClientSocket),
             (r"/push", Announcer),
