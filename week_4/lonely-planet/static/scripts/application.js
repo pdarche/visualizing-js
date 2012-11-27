@@ -40,6 +40,9 @@
 
 	var prepend = true
 
+	var showTweet = false,
+		tweetIndex = 0
+
 	// get user geolocation
     GEO_LOCATION.getLocation(uAreHere, 12000);
 
@@ -441,7 +444,7 @@ ws.onmessage = function(event) {
 
 				prependTweet(tweet, finalLocation)
 				group.add( pin )
-				pins.push( pin )
+				pins.unshift( pin )
 
 			})
 
@@ -469,7 +472,7 @@ ws.onmessage = function(event) {
 
 				prependTweet(tweet, finalLocation)
 	   			group.add( pin )
-	   			pins.push( pin )
+	   			pins.unshift( pin )
 
 	   		})
 	   	} else if (tweet.user.location !== '' ){
@@ -494,7 +497,7 @@ ws.onmessage = function(event) {
 	   				console.log(" ")
 
 	       			group.add( pin )
-	       			pins.push( pin )
+	       			pins.unshift( pin )
 	       			prependTweet(tweet, finalLocation)	       					
 	       		}
 	   				
@@ -564,6 +567,9 @@ function prependTweet(tweet, location){
 	    $('.tweet').hover(function(){
 			prepend = false
 			controls.enabled = false
+			tweetIndex = $('.tweet').index($(this))
+			showTweet = true
+
 		}, function(){
 			prepend = true
 			controls.enabled = true
@@ -834,6 +840,10 @@ function loop(){
 			}
 
 		})
+	}
+
+	if ( showTweet ){
+		pins[tweetIndex].children[0].children[1].material.opacity += .1
 	}
 	
 	//  loop() sSee this Mozilla developer page for details:
