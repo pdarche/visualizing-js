@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Sleep Blocks</title>
+	<!-- Big shout out to Scott Garner for the code organization inspiration -->
+	
+	<!--Meta-->
+
+	<meta charset="utf-8" />
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<meta name="description" content="An sleep visualization by El Pedrito" />
+	<meta name="author" content="El Pedrito" />
+	<meta name="keywords" content="WebGL, Three.js, Data Visualization" />
+	<meta name="copyright" content="Copyright 2012 Peter Darche" />	
+
+	<!-- JavaScript -->
+
+	<script type="text/javascript" src="js/vendor/jquery.js"></script>		
+	<script type="text/javascript" src="js/vendor/three.min.js"></script>
+	<script type="text/javascript" src="js/vendor/TrackballControls.js"></script>	
+	<script type="text/javascript" src="js/vendor/skip.js"></script>
+	<script type="text/javascript" src="js/vendor/typeface.js"></script>
+	<script tyep="text/javascript" src="js/vendor/helvetiker/helvetiker_regular.typeface.js"></script>
+	<script src="http://d3js.org/d3.v2.js"></script>
+	<script type="text/javascript" src="js/sleep.js"></script>
+
+	<!-- Document ready callback -->
+
+	<script type="text/javascript">
+		$( document ).ready(function(){
+			for ( var i = 0; i < 30; i++ ){
+				var startDate = sleep.sleepData[i].startDate
+
+				$('#days').append('<div class="day"><p>' + startDate.month + '/' + startDate.day + '/' + startDate.year + '</p></div>')
+			
+			}
+
+			$('.day').css('height', (window.innerHeight/30) - 1 )
+
+			$('.day').mouseover(function(){
+				var index = $(this).index()
+				// console.log(index)
+	
+				$.each(scene.children[9].children, function(j){
+					if ( j !== index ){
+							$.each(scene.children[9].children[j].children, function(i){
+							scene.children[9].children[j].children[i].material.opacity = .1
+							console.log("opacifying")
+						})
+					}
+				})			
+			}).mouseout(function(){
+				$.each(scene.children[9].children, function(k){
+					$.each(scene.children[9].children[k].children, function(l){
+						scene.children[9].children[k].children[l].material.opacity = 1
+						console.log("unopacifying")
+					})
+				})	
+			})
+		})	
+	</script>
+
+	<style>
+		body {
+			font-family: Monospace;
+			background-color: #202020;
+			margin: 0px;
+			overflow: hidden;
+		}
+/*		#days{
+			width:100%;
+			height:80px;
+			border-bottom:1px solid white;
+		}
+		.day{
+			height:80px;
+			background-color: rgba(200,200,200, .3);
+			float:left;
+			display:inline-block;
+			border-right:1px solid rgba(200,200,200,.3);
+		}*/
+		#days{
+			position: absolute;
+			top:0px;
+			width:100px;
+			height:100%;
+			border-right:1px solid white;
+		}
+		.day{
+			position: relative;
+			display:block;
+			width: 100px;
+			background-color: rgba(200,200,200, .3);
+			border-bottom:1px solid rgba(200,200,200,.3);
+			text-align: center;
+		}
+
+		.day:hover{
+			background-color: rgba(200,200,200, .6);
+		}
+
+		.day p {
+			margin:0px;
+			line-height: 200%
+		}
+
+
+	</style>
+
+</head>
+<body>
+	<div id="content">
+		<div id="days"></day>
+	</div>
+	<script type="text/javascript" src="js/app.js"></script>
+</body>
+</html>
