@@ -12,7 +12,8 @@ body
 #nav{
 	position:absolute;
 	width: 350px;
-	height: 750px;
+	/*height: 900px;*/
+	height:100%;
 	background-color: rgba(255,255,255, .2);
 	display:inline-block;
 	z-index: 1000;
@@ -101,8 +102,8 @@ h1{
 	position:relative;
 	float:right;
 	width:215px;
-	height:450px;
-	margin:150px 0px;
+	height:300px;
+	margin:20% 0px;
 	color:gray;
 }
 
@@ -155,35 +156,61 @@ h1{
 	line-height:193%;
 }
 
-.option_type {
+.option-wrapper .option-type {
+	display: block;
 	font-size:14px;
+	line-height: 250%;
+	width: 100%;
+	margin-bottom:0px;
 }
 
-.option {
+.option-wrapper .option {
 	border: 1px solid gray;
+	margin:10px auto;
 }
 
 .option:hover {
 	cursor:pointer;
 }
 
-.option-one {
-	-webkit-border-radius: 12px 0px 0px 12px;
-	margin-right:0px;
-	padding-right:0px;
-	border-right:0px;
+.option-wrapper .option-one {
+	margin:10px 10px 10px 35px;
 }
 
-.option-two {
-	-webkit-border-radius: 0px 12px 12px 0px;
-	margin-left:0px;
-	padding-left:0px;	
+#music{
+	width:100%;
+	text-align: center;
+	display: inline-block;
+	margin-bottom: 0px;
 }
 
-.active {
-	-webkit-box-shadow:  
-		inset 4px 4px 4px -4px #888,
-		inset -4px 4px 4px -4px #888;
+.option-wrapper .audio-control{
+	display:inline-block;
+	float:left;
+	height:30px;
+	line-height: 300%;
+	text-align: center;
+	width:25%;
+	border: 1px solid gray;
+	margin:10px 0px 0px 10px;
+	font-size: 10px
+}
+
+.option-wrapper .extra-margin{
+	margin: 10px 0px 0px 35px;
+}
+
+.audio-control:hover{
+	cursor:pointer;
+}
+
+.active, .active-audio {
+	background-color: rgba(255,255,255, .2);
+}
+
+#song_name{
+	width:100%;
+	margin: 10px 5px;
 }
 
 #flag{
@@ -192,7 +219,7 @@ h1{
 	height:50px;
 	width:20px;
 	margin:0px;
-	margin-top:185px;
+	margin-top:50%;
 	background-color: rgba(255,255,255, .2);
 	z-index:200;
 	-webkit-border-radius:5px 0px 0px 5px;

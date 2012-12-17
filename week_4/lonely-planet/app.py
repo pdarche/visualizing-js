@@ -134,7 +134,8 @@ settings = dict(
     twitter_consumer_key='EGLC7uXFL0wNMygeZoZOTw',
     twitter_consumer_secret='pnvNerZKSBSw1kri5wjaM255CluYwd3OdaovUeyCsI',
     cookie_secret='NTliOTY5NzJkYTVlMTU0OTAwMTdlNjgzMTA5M2U3OGQ5NDIxZmU3Mg==',
-    template_path=os.path.join( os.path.dirname( __file__ ), 'templates'),            
+    template_path=os.path.join( os.path.dirname( __file__ ), 'templates'),
+    static_path=os.path.join(os.path.dirname(__file__), "static")          
 )
 
 if __name__ == "__main__":
@@ -152,5 +153,5 @@ if __name__ == "__main__":
         **settings
 	)
 	http_server = tornado.httpserver.HTTPServer(app)
-	http_server.listen(8000)
+	http_server.listen(9000)
 	stream.run()

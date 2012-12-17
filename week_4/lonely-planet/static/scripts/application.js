@@ -29,7 +29,13 @@
 	var finalcomposer, 
 		glowcomposer, 
 		hblur, 
-		vblur;
+		vblur
+
+	var target = new THREE.Vector3( 0, 0, 0 )
+
+	var projector, plane;
+	var mouse2D, mouse3D, ray, theta = 45,
+		ROLLOVERED
 
 	var rotationY = new THREE.Matrix4(),
 		rotationX = new THREE.Matrix4(),
@@ -104,42 +110,17 @@ function init(){
 	
 	// ******************************
 
-
 	$( '#three' ).append( renderer.domElement )
 
 	// create scene
 	group = new THREE.Object3D()
 
-	var planetTexture   = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/final-images/earth_atmos.jpg" );
-	var cloudsTexture   = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/final-images/earth_clouds.png");
-	var normalTexture   = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/final-images/earth_normal.jpg" );
-	var specularTexture = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/final-images/earth_specular.jpg" );
+	var planetTexture   = THREE.ImageUtils.loadTexture( "static/media/final-images/earth_atmos.jpg" );
+	var cloudsTexture   = THREE.ImageUtils.loadTexture( "static/media/final-images/earth_clouds.png");
+	var normalTexture   = THREE.ImageUtils.loadTexture( "static/media/final-images/earth_normal.jpg" );
+	var specularTexture = THREE.ImageUtils.loadTexture( "static/media/final-images/earth_specular.jpg" );
 
 	//  useful resource: http://www.celestiamotherlode.net/catalog/earth.php
-	// var earthTexture = THREE.ImageUtils.loadTexture( "http://localhost:8000/static/media/good-earth/small-bump.jpeg" );
-
-		// geometry = new THREE.SphereGeometry( earthRadius, 100, 50 );
-		// geometry.computeTangents();
-
-		// meshPlanet = new THREE.Mesh( geometry, materialNormalMap );
-		// meshPlanet.rotation.y = 0;
-		// meshPlanet.rotation.z = tilt;
-		// group.add( meshPlanet )
-		// // scene.add( meshPlanet );
-
-		// // clouds
-
-		// var materialClouds = new THREE.MeshLambertMaterial( { color: 0xffffff, map: cloudsTexture, transparent: true } );
-
-		// meshClouds = new THREE.Mesh( geometry, materialClouds );
-		// meshClouds.scale.set( cloudsScale, cloudsScale, cloudsScale );
-		// meshClouds.rotation.z = tilt;
-		// group.add( meshClouds )
-		// // scene.add( meshClouds );
-
-
-		// scene.add( group )
-
 
 	var shader = THREE.ShaderUtils.lib[ "normal" ];
 	var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
@@ -172,11 +153,11 @@ function init(){
 
 	var materialNormalMap = new THREE.ShaderMaterial( parameters );
 
-		earthRadius = 90
+	earthRadius = 90
 	earth = new THREE.Mesh(
 		new THREE.SphereGeometry( earthRadius, 64, 64 ),
 		new THREE.MeshPhongMaterial( { 
-			map: planetTexture,  //THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-map.jpg' ), 
+			map: planetTexture,  //THREE.ImageUtils.loadTexture( 'static/media/good-earth/small-map.jpg' ), 
 			transparency: true, 
 			opacity: 1, 
 			ambient: 0xFFFFFF, 
@@ -202,7 +183,7 @@ function init(){
 		new THREE.SphereGeometry( earthRadius + 2, 32, 32 ),
 		new THREE.MeshLambertMaterial({ 
 			color: 0xffffff,
-			map: cloudsTexture, //THREE.ImageUtils.loadTexture( 'http://localhost:8000/static/media/good-earth/small-clouds.png' ),
+			map: cloudsTexture, //THREE.ImageUtils.loadTexture( 'static/media/good-earth/small-clouds.png' ),
 			transparent: true
 			// blending: THREE.CustomBlending,
 			// blendSrc: THREE.SrcAlphaFactor,
@@ -236,89 +217,6 @@ function init(){
 
 	glowscene.add( atmosphere )	
 
-	// add/configure glow composer
-	// var renderTargetParameters = { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, format: THREE.RGBFormat, stencilBufer: false };
-	// renderTargetGlow = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );
-		 
-	// // Prepare the blur shader passes
-	// hblur = new THREE.ShaderPass( THREE.ShaderExtras[ "horizontalBlur" ] );
-	// vblur = new THREE.ShaderPass( THREE.ShaderExtras[ "verticalBlur" ] );
-	 
-	// var bluriness = 3;
-	 
-	// hblur.uniforms[ "h" ].value = bluriness / window.innerWidth;
-	// vblur.uniforms[ "v" ].value = bluriness / window.innerHeight;
-	 
-	// // Prepare the glow scene render pass
-	// var renderModelGlow = new THREE.RenderPass( glowscene, camera );
-	 
-	// // Create the glow composer
-	// glowcomposer = new THREE.EffectComposer( renderer, renderTargetGlow );
-	 
-	// // Add all the glow passes
-	// glowcomposer.addPass( renderModelGlow );
-	// glowcomposer.addPass( hblur );
-	// glowcomposer.addPass( vblur );
-
-	// // add/configure final composer
-	// var finalshader = {
-	// 	    uniforms: {
-	// 	        tDiffuse: { type: "t", value: 0, texture: null }, // The base scene buffer
-	// 	        tGlow: { type: "t", value: 1, texture: null } // The glow scene buffer
-	// 	    },
-		 
-	// 	    vertexShader: [
-	// 	        "varying vec2 vUv;",
-		 
-	// 	        "void main() {",
-		 
-	// 	            "vUv = vec2( uv.x, 1.0 - uv.y );",
-	// 	            "gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );",
-		 
-	// 	        "}"
-	// 	    ].join("\n"),
-		 
-	// 	    fragmentShader: [
-	// 	        "uniform sampler2D tDiffuse;",
-	// 	        "uniform sampler2D tGlow;",
-		 
-	// 	        "varying vec2 vUv;",
-		 
-	// 	        "void main() {",
-		 
-	// 	            "vec4 texel = texture2D( tDiffuse, vUv );",
-	// 	            "vec4 glow = texture2D( tGlow, vUv );",
-	// 	            "gl_FragColor = texel + vec4(0.5, 0.75, 1.0, 1.0) * glow * 2.0;",
-		 
-	// 	        "}"
-	// 	    ].join("\n")
-	// };
-
-	// // First we need to assign the glow composer's output render target to the tGlow sampler2D of our shader
-	// finalshader.uniforms[ "tGlow" ].texture = glowcomposer.renderTarget2;
-	// // Note that the tDiffuse sampler2D will be automatically filled by the EffectComposer
-	 
-	// // Prepare the base scene render pass
-	// var renderModel = new THREE.RenderPass( scene, camera );
-	 
-	// // Prepare the additive blending pass
-	// var finalPass = new THREE.ShaderPass( finalshader );
-	// finalPass.needsSwap = true;
-	 
-	// // Make sure the additive blending is rendered to the screen (since it's the last pass)
-	// finalPass.renderToScreen = true;
-	 
-	// // Prepare the composer's render target
-	// renderTarget = new THREE.WebGLRenderTarget( window.innerWidth, window.innerHeight, renderTargetParameters );
-	 
-	// // Create the composer
-	// finalcomposer = new THREE.EffectComposer( renderer, renderTarget );
-	 
-	// // Add all passes
-	// finalcomposer.addPass( renderModel );
-	// finalcomposer.addPass( finalPass ); 
-
-
 	var renderModel = new THREE.RenderPass( scene, camera );
 	var effectFilm = new THREE.FilmPass( 0.35, 0.75, 2048, false );
 
@@ -328,28 +226,68 @@ function init(){
 
 	composer.addPass( renderModel );
 	composer.addPass( effectFilm );
+
+	//projector
+	projector = new THREE.Projector();
+
+	plane = new THREE.Mesh( new THREE.PlaneGeometry( 1000, 1000 ), new THREE.MeshBasicMaterial() );
+	// plane.rotation.x = - Math.PI / 2;
+	plane.rotation.z = - Math.PI / 2;
+	plane.position.z = -50
+	plane.visible = false;
+	scene.add( plane );
+
+	mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
+	ray = new THREE.Ray( camera.position, null );
 	
+	//resize
+	window.addEventListener( 'resize', onWindowResize, false );
+
+	//mousemove
+	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 }
 
 // application control panel  
 function addAppControls(){
 
 	//control panel control
-	$('#flag').click(function(){		
+	$('#flag').click(function(){
+
 		$('#control_panel').toggleClass("shown", "hidden")
+
 	})
 
-	$('#show_tweets').click(function(){
-		$('#hide_tweets').removeClass('active')
+	$('.option').click(function(){
+		
+		console.log("active shit ")
+		$('.active').removeClass('active')
 		$(this).addClass('active')
-		$('#nav').removeClass('hidden_tweets').addClass('shown').addClass('active')	
+
+		if ( $('#nav').hasClass('hidden_tweets') ){
+
+			$('#nav').removeClass('hidden_tweets').addClass('shown').addClass('active')
+
+		} else{
+			
+			$('#nav').removeClass('shown').addClass('hidden_tweets')				
+
+		}
+			
 	})
 
-	$('#hide_tweets').click(function(){
-		$('#show_tweets').removeClass('active')
-		$(this).addClass('active')
-		$('#nav').removeClass('shown').addClass('hidden_tweets')
+	$('#play, #pause').click(function(){
+		console.log('audio control clicked')
+		$('.active-audio').removeClass('active-audio')
+		$(this).addClass('active-audio')
 	})
+
+
+
+	// $('#hide_tweets').click(function(){
+	// 	$('#show_tweets').removeClass('active')
+	// 	$(this).addClass('active')
+	// 	$('#nav').removeClass('shown').addClass('hidden_tweets')
+	// })
 
 }
 
@@ -388,30 +326,37 @@ function uAreHere( x, y ){
 		})
 	)
 
-}	
+	// scene.add( urh )
 
-function flyToUser() {
-	var projector = new THREE.Projector();
+}
 
-	var vector = new THREE.Vector3( ( event.clientX / window.innerWidth ) * 2 - 1, -( event.clientY / window.innerHeight ) * 2 + 1, 0.5 );
-	
-	projector.unprojectVector( vector, camera );
+function onDocumentMouseMove( event ) {
 
-	var ray = new THREE.Ray( camera.position, vector.subSelf( camera.position ).normalize() );
+	event.preventDefault();
 
-	var intersects = ray.intersectObjects( userPin );
+	mouse2D.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+	mouse2D.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+
+	mouse3D = projector.unprojectVector( mouse2D.clone(), camera );
+	ray.direction = mouse3D.subSelf( camera.position ).normalize();
+
+	var intersects = ray.intersectObjects( scene.children );
 
 	if ( intersects.length > 0 ) {
-		// if(!cameraTracking)cameraTracking=true
-		// change the point to look at the number of the object
-		tweetPointIndex = intersects[0].object.message
-		console.log(intersects[0].object.country)
+
+		// if ( ROLLOVERED ) ROLLOVERED.color.setHex( 0x00ff80 );
+
+		ROLLOVERED = intersects;
+		
+		console.log( intersects )
+
 	}
+
 }
 
 
 // create web socket 
-var ws = new WebSocket("ws://localhost:8000/socket");
+var ws = new WebSocket("ws://localhost:9000/socket");
 
 // tweet pins
 ws.onmessage = function(event) {
@@ -439,8 +384,6 @@ ws.onmessage = function(event) {
 			$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?latlng=' + lat + ',+' + lon + '&sensor=false&callback=?', function(data){
 
 				var finalLocation = data.results[0].formatted_address
-				console.log("returned from geo: ", data.results)
-				console.log(" ")
 
 				prependTweet(tweet, finalLocation)
 				group.add( pin )
@@ -457,12 +400,7 @@ ws.onmessage = function(event) {
 	   			state = fullname[1],
 	   			country = tweet.place.country
 
-	   		console.log("tweet place raw: ", tweet.place.full_name)
-
 	   		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?' + city + ',+' + state + ',+' + country + '&sensor=false&callback=?', function(data){
-
-	   			console.log("returned from place", data)
-	   			console.log(" ")
 
 		       	var lat = tweet.geo.coordinates[0],
 					lon = tweet.geo.coordinates[1],
@@ -481,8 +419,6 @@ ws.onmessage = function(event) {
 	    		location = location.replace(',', '+')
 	    		location = location.replace(/\s+/, '+')
 
-	    	console.log("from user location: ", tweet.user.location)
-
 	   		$.getJSON('http://maps.googleapis.com/maps/api/geocode/json?address=' + location + '&sensor=false', function(data){
 
 	   			if( data.status !== "ZERO_RESULTS"){
@@ -492,9 +428,6 @@ ws.onmessage = function(event) {
 	       				pin = dropPin(lat, lon, 0xFFFFFF, tweet )  //CC11
 
 	       			var finalLocation = data.results[0].formatted_address
-
-					console.log("returned final location: ", data.results[0].formatted_address)
-	   				console.log(" ")
 
 	       			group.add( pin )
 	       			pins.unshift( pin )
@@ -528,6 +461,7 @@ function prependTweet(tweet, location){
 		    	$(this).find('textarea').focus(function(){
 
 		    		$(this).val( '@' + tweet.user.screen_name )
+		    		var textContent = $(this) 
 
 		    		$('.reply-button').click(function(){
 						var dataString = 'data=' + $(this).prev().val(),
@@ -535,11 +469,13 @@ function prependTweet(tweet, location){
 						
 						$.ajax({
 							type: "GET",
-							url: "http://127.0.0.1:8000/post",
+							url: "http://127.0.0.1:9000/post",
 							data: dataString,
 							success: function(data){
 								console.log(data)
 								button.hide()
+								$('textarea').val('Tweet sent!')
+
 
 							},
 							error: function(data){
@@ -564,25 +500,26 @@ function prependTweet(tweet, location){
 	    $('.tweet').size() > 50 ? $('.tweet:last-child').remove() : null
 
 	    //if user is hovering over tweets stop new tweets from prepending
-	    $('.tweet').hover(function(){
+	    $('.tweet').mouseover(function(){
 			prepend = false
 			controls.enabled = false
 			tweetIndex = $('.tweet').index($(this))
 			showTweet = true
 
-		}, function(){
+		}).mouseleave(function(){
 			prepend = true
 			controls.enabled = true
+			showTweet = false
 		})
 
 	    if( !prepend ){
 	    	$('.tweet').first().hide()
+	    	tweetIndex++
 	    } else{
 	    	$('.tweet').fadeIn()
 	    	$('.tweet').first().hide().fadeIn()
 	    }
 }
-
 
 //  Nesting rotations correctly is an exercise in patience.
 //  Imagine that our marker is standing straight, from the Sout	h Pole up to
@@ -843,7 +780,11 @@ function loop(){
 	}
 
 	if ( showTweet ){
-		pins[tweetIndex].children[0].children[1].material.opacity += .1
+
+		var rolloveredTweet = pins[tweetIndex].children[0].children[1]
+			rolloveredTweet.material.opacity = 1
+		
+		console.log( "opacity", rolloveredTweet.material.opacity )
 	}
 	
 	//  loop() sSee this Mozilla developer page for details:
@@ -857,12 +798,22 @@ function loop(){
 function render(){
 	var delta = clock.getDelta();
 
+	camera.lookAt( scene.position )
 	renderer.render( scene, camera )
 	// glowcomposer.render( 0.1 );
 	// finalcomposer.render( 0.1 );
 
 	renderer.clear();
 	composer.render( delta );
+
+}
+
+function onWindowResize() {
+
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+
+	renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
 

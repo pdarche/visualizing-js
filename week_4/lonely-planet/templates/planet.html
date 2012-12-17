@@ -1,13 +1,20 @@
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta http-equiv="content-type" content="charset=utf-8" />
-		<link rel="stylesheet" type="text/css" href="http://localhost:8000/static/styles/base.css" />
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/geolocation.js"></script>	
 		<title>Lonely Planet</title>
+
+		<!-- meta -->
+		<meta http-equiv="content-type" content="charset=utf-8" />
+
+		<!-- stylesheets -->
+		<link rel="stylesheet" type="text/css" href="static/styles/base.css" />
+
+		<!-- javascript --> 
+		<script charset="utf-8" src="static/scripts/geolocation.js"></script>	
+		
 	</head>
 	<body>
-		<audio id="audio_player"autoplay="autoplay"><source src="http://localhost:8000/static/media/mad_world.mp3" type="audio/mp3"></audio>
+		<audio id="audio_player"autoplay="autoplay"><source src="static/media/mad_world.mp3" type="audio/mp3"></audio>
 		<div id="three"></div>
 		<div id="nav" class="shown">
 			<h1>Lonely Planet</h1>
@@ -19,47 +26,38 @@
 				<div id="control_title">Controls</div>
 				<div id="control_wrapper">
 					<div class="option-wrapper">
-						<div class="option_type">Tweets</div>
+						<div class="option-type visibility">Tweets</div>
 						<div id="show_tweets" class="option-one option active">Show</div>
 						<div id="hide_tweets" class="option-two option">Hide</div>
 					</div>
 					<div class="option-wrapper">
-						<div class="option_type">Earth</div>
-						<div id="show_geog" class="option-one option active">Geo</div>
-						<div id="show_borders" class="option-two option">Borders</div>
-					</div>
-				</div>
+						<div class="option-type audio" id="music">Music</div>	
+						<div class="audio-control active-audio extra-margin" id="play">play</div>
+						<div class="audio-control" id="pause">pause</div>
+						<div class="audio-control extra-margin" id="forward">next</div>
+						<div class="audio-control" id="back">previous</div>
+						<div id="song_name">Gary Jules - Mad World</div>
+					</div> 
+				</div> 
 			</div>
 		</div>
 		<div id="authenticated">{{ authenticated }}</div>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/jquery.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/skip.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/three.js"></script>
-		<script charset="utf-8" src="http://localhost:8000/static/scripts/ShaderExtras.js"></script>
-		<script src="http://localhost:8000/static/scripts/controls/FlyControls.js"></script>
-		<script src="http://localhost:8000/static/scripts/shaders/CopyShader.js"></script>
-		<script src="http://localhost:8000/static/scripts/shaders/FilmShader.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/EffectComposer.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/ShaderPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/MaskPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/shaderPass.js"></script>	
-		<script src="http://localhost:8000/static/scripts/postprocessing/RenderPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/postprocessing/FilmPass.js"></script>
-		<script src="http://localhost:8000/static/scripts/typefaces/helvetiker_regular.typeface.js"></script>
-		<script src="http://localhost:8000/static/scripts/typefaces/helvetiker_bold.typeface.js"></script>
-		<script src="http://localhost:8000/static/scripts/application.js"></script>
-
-		<script type="text/javascript">
-
-			var songPaths = ["http://localhost:8000/static/media/nothing_compares.mp3", "http://localhost:8000/static/media/one_more_try.mp3", "http://localhost:8000/static/media/miss_misery.mp3", "http://localhost:8000/static/media/nutshell.mp3", "http://localhost:8000/static/media/no_surprises.mp3" ],
-				songIndex = 0,
-				audioPlayer = document.getElementById('audio_player');
-
-			$('#audio_player').on('ended', function(){
-				audioPlayer.src = songPaths[songIndex];
-				songIndex !== 3 ? songIndex++ : songIndex = 0;
-			})
-
-		</script>		
+		<script charset="utf-8" src="static/scripts/jquery.js"></script>
+		<script charset="utf-8" src="static/scripts/skip.js"></script>
+		<script charset="utf-8" src="static/scripts/three.js"></script>
+		<script charset="utf-8" src="static/scripts/ShaderExtras.js"></script>
+		<script charset="utf-8" src="/static/scripts/controls/FlyControls.js"></script>
+		<script charset="utf-8" src="static/scripts/shaders/CopyShader.js"></script>
+		<script charset="utf-8" src="static/scripts/shaders/FilmShader.js"></script>
+		<script charset="utf-8" src="static/scripts/postprocessing/EffectComposer.js"></script>
+		<script charset="utf-8" src="static/scripts/postprocessing/ShaderPass.js"></script>
+		<script charset="utf-8" src="static/scripts/postprocessing/MaskPass.js"></script>
+		<script charset="utf-8" src="static/scripts/postprocessing/shaderPass.js"></script>	
+		<script charset="utf-8" src="static/scripts/postprocessing/RenderPass.js"></script>
+		<script charset="utf-8" src="static/scripts/postprocessing/FilmPass.js"></script>
+		<script charset="utf-8" src="static/scripts/typefaces/helvetiker_regular.typeface.js"></script>
+		<script charset="utf-8" src="static/scripts/typefaces/helvetiker_bold.typeface.js"></script>
+		<script charset="utf-8" src="static/scripts/application.js"></script>
+		<script charset="utf-8" src="static/scripts/audio.js"></script>		
 	</body>
 </html>
