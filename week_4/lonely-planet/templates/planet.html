@@ -8,13 +8,14 @@
 
 		<!-- stylesheets -->
 		<link rel="stylesheet" type="text/css" href="static/styles/base.css" />
+		<link rel="stylesheet" type="text/css" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
 
 		<!-- javascript --> 
 		<script charset="utf-8" src="static/scripts/geolocation.js"></script>	
 		
 	</head>
 	<body>
-		<audio id="audio_player"autoplay="autoplay"><source src="static/media/mad_world.mp3" type="audio/mp3"></audio>
+		<audio id="audio_player" autoplay="autoplay"><source src="static/media/mad_world.mp3" type="audio/mp3"></audio>
 		<div id="three"></div>
 		<div id="nav" class="shown">
 			<h1>Lonely Planet</h1>
@@ -38,15 +39,23 @@
 						<div class="audio-control" id="back">previous</div>
 						<div id="song_name">Gary Jules - Mad World</div>
 					</div> 
+					<div class="option-wrapper">
+						<div class="option-type">Follower Count</div>
+						<div id="slider_wrapper">
+							<div id="slider_pos">1000</div>
+							<div class="slider" id="follower_count_slider"></div>
+						</div>
+					</div>
 				</div> 
 			</div>
 		</div>
 		<div id="authenticated">{{ authenticated }}</div>
 		<script charset="utf-8" src="static/scripts/jquery.js"></script>
+		<script charset="utf-8" src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
 		<script charset="utf-8" src="static/scripts/skip.js"></script>
 		<script charset="utf-8" src="static/scripts/three.js"></script>
 		<script charset="utf-8" src="static/scripts/ShaderExtras.js"></script>
-		<script charset="utf-8" src="/static/scripts/controls/FlyControls.js"></script>
+		<script charset="utf-8" src="static/scripts/controls/FlyControls.js"></script>
 		<script charset="utf-8" src="static/scripts/shaders/CopyShader.js"></script>
 		<script charset="utf-8" src="static/scripts/shaders/FilmShader.js"></script>
 		<script charset="utf-8" src="static/scripts/postprocessing/EffectComposer.js"></script>

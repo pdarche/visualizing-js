@@ -26,28 +26,32 @@
 
 	var cloudsScale = 1.005;
 
+	// shader vars
 	var finalcomposer, 
 		glowcomposer, 
 		hblur, 
 		vblur
 
-	var target = new THREE.Vector3( 0, 0, 0 )
+	// mouse event vars
+	var projector, 
+		plane;
 
-	var projector, plane;
-	var mouse2D, mouse3D, ray, theta = 45,
+	var mouse2D, 
+		mouse3D, 
+		ray, 
+		theta = 45,
 		ROLLOVERED
-
-	var rotationY = new THREE.Matrix4(),
-		rotationX = new THREE.Matrix4(),
-		translation = new THREE.Matrix4(),
-		matrix = new THREE.Matrix4()
 
 	var clock = new THREE.Clock();
 
-	var prepend = true
-
 	var showTweet = false,
+		prepend = true,
 		tweetIndex = 0
+
+	var followerCount = 5000
+
+	// create socket object 
+	var ws = new WebSocket("ws://localhost:9000/socket");
 
 	// get user geolocation
     GEO_LOCATION.getLocation(uAreHere, 12000);
@@ -92,23 +96,11 @@ function init(){
 	glowcamera.position = camera.position;
 	glowscene.add( glowcamera )
 
-
-	// add/configure renderer
-	// renderer = new THREE.WebGLRenderer({ antialias: true })
-	// // window.renderer = new THREE.CanvasRenderer({ antialias: true })
-	// renderer.setSize( WIDTH, HEIGHT )
-	// renderer.shadowMapEnabled = true
-	// renderer.shadowMapSoft = true
-
-	// ******************************
-	//new
 	renderer = new THREE.WebGLRenderer( { clearColor: 0x000000, clearAlpha: 1 } );
 	renderer.setSize( WIDTH, HEIGHT );
 	renderer.sortObjects = false;
 
 	renderer.autoClear = false;
-	
-	// ******************************
 
 	$( '#three' ).append( renderer.domElement )
 
@@ -120,7 +112,7 @@ function init(){
 	var normalTexture   = THREE.ImageUtils.loadTexture( "static/media/final-images/earth_normal.jpg" );
 	var specularTexture = THREE.ImageUtils.loadTexture( "static/media/final-images/earth_specular.jpg" );
 
-	//  useful resource: http://www.celestiamotherlode.net/catalog/earth.php
+	//****************** SHADERS *****************
 
 	var shader = THREE.ShaderUtils.lib[ "normal" ];
 	var uniforms = THREE.UniformsUtils.clone( shader.uniforms );
@@ -153,6 +145,8 @@ function init(){
 
 	var materialNormalMap = new THREE.ShaderMaterial( parameters );
 
+	//****************** PRIMARY SCENE ELEMENTS ******************
+
 	earthRadius = 90
 	earth = new THREE.Mesh(
 		new THREE.SphereGeometry( earthRadius, 64, 64 ),
@@ -165,8 +159,6 @@ function init(){
 			specular: 0xFFFFFF, 
 			shininess: 5, 
 			perPixel: true, 
-			// bumpMap: normalTexture, 
-			// bumpScale: 19, 
 			metal: true 
 		})
 	)
@@ -185,10 +177,6 @@ function init(){
 			color: 0xffffff,
 			map: cloudsTexture, //THREE.ImageUtils.loadTexture( 'static/media/good-earth/small-clouds.png' ),
 			transparent: true
-			// blending: THREE.CustomBlending,
-			// blendSrc: THREE.SrcAlphaFactor,
-			// blendDst: THREE.SrcColorFactor,
-			// blendEquation: THREE.AddEquation
 		})
 	)
 	clouds.position.set( 0, 0, 0 )
@@ -223,7 +211,6 @@ function init(){
 	effectFilm.renderToScreen = true;
 
 	composer = new THREE.EffectComposer( renderer );
-
 	composer.addPass( renderModel );
 	composer.addPass( effectFilm );
 
@@ -240,12 +227,16 @@ function init(){
 	mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
 	ray = new THREE.Ray( camera.position, null );
 	
+
+	//***************** EVENTS ***************** 
 	//resize
 	window.addEventListener( 'resize', onWindowResize, false );
 
 	//mousemove
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 }
+
+//**************** this should be in the UI object
 
 // application control panel  
 function addAppControls(){
@@ -281,13 +272,6 @@ function addAppControls(){
 		$(this).addClass('active-audio')
 	})
 
-
-
-	// $('#hide_tweets').click(function(){
-	// 	$('#show_tweets').removeClass('active')
-	// 	$(this).addClass('active')
-	// 	$('#nav').removeClass('shown').addClass('hidden_tweets')
-	// })
 
 }
 
@@ -348,15 +332,11 @@ function onDocumentMouseMove( event ) {
 
 		ROLLOVERED = intersects;
 		
-		console.log( intersects )
+		// console.log( intersects )
 
 	}
 
 }
-
-
-// create web socket 
-var ws = new WebSocket("ws://localhost:9000/socket");
 
 // tweet pins
 ws.onmessage = function(event) {
@@ -372,7 +352,7 @@ ws.onmessage = function(event) {
    	    atMention = noAtMentions.test(tweet.text)
    	    split = tweet.text.split(' ')
 
-	if ( belieber === false && split[0] !== 'RT' && links === false ){ //tweet.user.followers_count <= 100 &&
+	if ( belieber === false && split[0] !== 'RT' && links === false && tweet.user.followers_count <= followerCount ){ //tweet.user.followers_count <= 100 &&
 
     	if ( tweet.geo !== null ){
 
@@ -816,6 +796,24 @@ function onWindowResize() {
 	renderer.setSize( window.innerWidth, window.innerHeight );
 
 }
+
+	$('#follower_count_slider').slider({
+		min: 0,
+		max: 1000,
+		value:1000,
+		slide: function(event, ui){
+			
+			$('#slider_pos').html(ui.value)
+			followerCount = ui.value
+
+			controls.enabled = false
+		},
+		change: function(event, ui){
+
+			controls.enabled = true
+			
+		}
+	})
 
 
 	// add pins
