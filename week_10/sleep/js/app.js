@@ -41,12 +41,13 @@
 	animate();
 	makeBedtimes()
 
-
 function init() {
 
-	var size = 1800, 
-		step = 6
-
+	// var textGeom = new THREE.TextGeometry("pizza", {font: 'helvetiker', size: 30, height: 6, color: 0xccd3ff}),
+	// 	textMesh = new THREE.MeshNormalMaterial({color: 0x00ff00}),
+	// 	text = new THREE.Mesh(textGeom,textMesh)
+	
+	// scene.add(text)
 
 	container = document.createElement( 'div' );
 	$('#content').prepend( container );
@@ -57,6 +58,9 @@ function init() {
 	scene = new THREE.Scene();
 
 	/*********** Grid ***********/
+
+	var size = 1800, 
+		step = 6
 
 	// var geometry = new THREE.Geometry();
 
@@ -79,7 +83,7 @@ function init() {
 	// scene.add( line );
 
 
-	/*********** Mouse Geometry ***********/
+	/*********** /Grid ***********/
 
 	projector = new THREE.Projector();
 
@@ -91,8 +95,7 @@ function init() {
 	mouse2D = new THREE.Vector3( 0, 10000, 0.5 );
 	ray = new THREE.Ray( camera.position, null );
 
-	
-	/*********** Lights ***********/
+	// Lights
 
 	var ambientLight = new THREE.AmbientLight( 0x606060 );
 	scene.add( ambientLight );
@@ -116,9 +119,7 @@ function init() {
 
 	container.appendChild(renderer.domElement);
 
-	
-	/*********** Events ***********/
-
+	//events
 	document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
 	window.addEventListener( 'resize', onWindowResize, false );
@@ -254,7 +255,6 @@ function createRects(){
 		scene.add( nights );
 }
 
-
 function makeBedtimes(){
 	for ( var j = 0; j < 30; j++ ){
 
@@ -304,8 +304,6 @@ function drawAxes(){
 
 	//days
 
-	/*********** Chart Labels ***********/
-
 	days = new THREE.Geometry()
 
 	days.vertices.push( new THREE.Vector3( -750, 0, -750) )
@@ -317,25 +315,6 @@ function drawAxes(){
 
 		time.vertices.push( new THREE.Vector3( 	-750, 0, 800/15 * d + 1 ) );
 		time.vertices.push( new THREE.Vector3(  -765, 0, 800/15 * d + 1) );
-
-		var meshMaterial1 = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
-		var text1 = new THREE.TextGeometry( "TEST", { size: 15, height: 0, curveSegments: 10, font: "helvetiker", weight: "normal", style: "normal" });
-		var textMesh1 = new THREE.Mesh(text1,meshMaterial1);
-		textMesh1.position.x = -780
-		textMesh1.position.z = -810/15 * d
-		textMesh1.rotation.x = - Math.PI / 2;
-		textMesh1.rotation.z = - Math.PI ;
-
-		var meshMaterial2 = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
-		var text2 = new THREE.TextGeometry( "TEST", { size: 15, height: 0, curveSegments: 10, font: "helvetiker", weight: "normal", style: "normal" });
-		var textMesh2 = new THREE.Mesh(text2,meshMaterial2);
-		textMesh2.position.x = -780
-		textMesh2.position.z = 810/15 * d + 1
-		textMesh2.rotation.x = - Math.PI / 2;
-		textMesh2.rotation.z = - Math.PI ;
-
-		scene.add(textMesh1);
-		scene.add(textMesh2); 
 	}
 
 	var dLine = new THREE.Line( days, material );
