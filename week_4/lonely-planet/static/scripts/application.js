@@ -422,9 +422,39 @@ ws.onmessage = function(event) {
 }
 
 function prependTweet(tweet, location){
-	var tweetString = '<div class="tweet" id="' + tweet.id_str + '"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
+
+	if ( tweet.lang !== "en"){
+		var toTranslate = encodeURIComponent( tweet.text )
+		$.getJSON('https://www.googleapis.com/language/translate/v2?key=AIzaSyB5X7RwczuFOURqZQB7KjIpIVYtLwRzsfk&target=en&q=' + toTranslate, function(data){
+			console.log(data.data.translations[0].translatedText)
+			var translatedText = data.data.translations[0].translatedText
+
+			attachTweet(tweet, translatedText, location)
+		} )
+	} else {
+
+		attachTweet(tweet, null, location)
+
+	}
+
+}
+
+function attachTweet(tweet, translatedText, location){
+
+		console.log("translatedText", translatedText)
+
+		if ( translatedText !== null ){
+
+			var tweetText = translatedText	
+
+		} else{
+
+			var tweetText = tweet.text	
+		} 
+
+		var tweetString = '<div class="tweet" id="' + tweet.id_str + '"><div class="img"><img src="' + tweet.user.profile_image_url + '"/></div><div class="tweet-wrapper">'
 		tweetString += '<div class="user-name"><a href="http://twitter.com/' + tweet.user.screen_name + '" Target="_blank"> ' + tweet.user.name + '</a><span class="location">' + location + '</span>'
-		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweet.text + '</div></div>'
+		tweetString += '</div><div class="followers">followers: ' + tweet.user.followers_count + '</div><div class="tweet-text"> ' + tweetText + '</div></div>'
 		tweetString += '<div class="reply"><textarea cols="40" rows="6" class="reply-input" placeholder="reply to @' + tweet.user.screen_name + ' "></textarea><button class="reply-button">tweet</button></div></div>'											
 
 		$('#tweets').prepend(tweetString)
@@ -811,7 +841,7 @@ function onWindowResize() {
 		change: function(event, ui){
 
 			controls.enabled = true
-			
+
 		}
 	})
 
