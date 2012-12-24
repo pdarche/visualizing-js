@@ -16,7 +16,7 @@
 		isCtrlDown = false,
 		target = new THREE.Vector3( 200, 200, 0 );
 	
-	var ROLLOVERED;
+	var ROLLOVERED
 
 	var WIDTH = window.innerWidth,
 		HEIGHT = window.innerHeight
@@ -26,7 +26,8 @@
 		NEAR       = 0.1,
 		FAR        = 100000
 
-	var bedtimes = []
+	var bedtimes = [],
+		fiveMinIncrements = []
 
 	var sleepStates = {
 		"UNDEFINED" : { "height" : 0, "color" : 0xffffff },
@@ -46,7 +47,6 @@ function init() {
 
 	var size = 1800, 
 		step = 6
-
 
 	container = document.createElement( 'div' );
 	$('#content').prepend( container );
@@ -284,17 +284,27 @@ function drawAxes(){
 	time.vertices.push( new THREE.Vector3(  -750 , 0, -800 ) );	
 
 	for ( var t = 0; t < 100; t++ ){
+
 		time.vertices.push( new THREE.Vector3( 	750/100 * t, 0, -800  ) );
 		time.vertices.push( new THREE.Vector3(  750/100 * t, 0, -815 ) );		
 
 		time.vertices.push( new THREE.Vector3( 	-750/100 * (t + 1), 0, -800  ) );
 		time.vertices.push( new THREE.Vector3(  -750/100 * (t + 1), 0, -815 ) );
-	}
 
-	// for ( var s = 1; s < 100; s++ ){
-	// 	time.vertices.push( new THREE.Vector3( 	-750/100 * s, 0, -800  ) );
-	// 	time.vertices.push( new THREE.Vector3(  -750/100 * s, 0, -815 ) );		
-	// }
+ 		var currTime = fiveMinIncrements[t]
+			console.log( "currTime" , currTime )
+
+		var meshMaterial = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
+		var text = new THREE.TextGeometry( currTime, { size: 6, height: 0, curveSegments: 10, font: "helvetiker", weight: "normal", style: "normal" });
+		var textMesh = new THREE.Mesh(text,meshMaterial);
+		textMesh.position.x = ( 750/50 * t ) - 750
+		textMesh.position.z = -850
+		textMesh.rotation.x = - Math.PI / 2;
+		textMesh.rotation.z = - Math.PI / 2;
+
+		scene.add(textMesh);
+
+	}
 
 	var material = new THREE.LineBasicMaterial( { color: 0xffffff, opacity: .4, visible : true } );
 
@@ -302,6 +312,7 @@ function drawAxes(){
 	tLine.type = THREE.LinePieces;
 	scene.add( tLine );
 
+	
 	//days
 
 	/*********** Chart Labels ***********/
@@ -318,25 +329,23 @@ function drawAxes(){
 		time.vertices.push( new THREE.Vector3( 	-750, 0, 800/15 * d + 1 ) );
 		time.vertices.push( new THREE.Vector3(  -765, 0, 800/15 * d + 1) );
 
-		var meshMaterial1 = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
-		var text1 = new THREE.TextGeometry( "TEST", { size: 15, height: 0, curveSegments: 10, font: "helvetiker", weight: "normal", style: "normal" });
-		var textMesh1 = new THREE.Mesh(text1,meshMaterial1);
-		textMesh1.position.x = -780
-		textMesh1.position.z = -810/15 * d
-		textMesh1.rotation.x = - Math.PI / 2;
-		textMesh1.rotation.z = - Math.PI ;
-
-		var meshMaterial2 = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
-		var text2 = new THREE.TextGeometry( "TEST", { size: 15, height: 0, curveSegments: 10, font: "helvetiker", weight: "normal", style: "normal" });
-		var textMesh2 = new THREE.Mesh(text2,meshMaterial2);
-		textMesh2.position.x = -780
-		textMesh2.position.z = 810/15 * d + 1
-		textMesh2.rotation.x = - Math.PI / 2;
-		textMesh2.rotation.z = - Math.PI ;
-
-		scene.add(textMesh1);
-		scene.add(textMesh2); 
 	}
+
+	for ( var e = 1; e < 30; e++ ){
+
+		var date = sleep.sleepData[e].startDate.month + '/' + sleep.sleepData[e].startDate.day + '/' + sleep.sleepData[e].startDate.year
+		
+		var meshMaterial = new THREE.MeshLambertMaterial( { color: 0xaaaaaa } );
+		var text = new THREE.TextGeometry( String(date), { size: 15, height: 0, curveSegments: 10, font: "helvetiker", weight: "normal", style: "normal" });
+		var textMesh = new THREE.Mesh(text,meshMaterial);
+		textMesh.position.x = -780
+		textMesh.position.z = ( 810/15 * e ) - 810
+		textMesh.rotation.x = - Math.PI / 2;
+		textMesh.rotation.z = - Math.PI ;
+
+		scene.add(textMesh);
+		
+	} 
 
 	var dLine = new THREE.Line( days, material );
 	dLine.type = THREE.LinePieces;
@@ -345,14 +354,47 @@ function drawAxes(){
 
 }
 
+
+/************** Helpers **************/
+
 var scale = d3.scale.linear()
 			.domain([0, d3.max(bedtimes)])
 			.range([0, 900])
+
+function makeDatetimes(){
+	var hrs = [ 10, 11, 12, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 1 ]
+	
+	for ( var i = 0; i < hrs.length; i++ ) {
+		for ( var j = 0; j < 12; j++ ) {
+
+			var mins 
+			if  ( j == 0 ) {
+				mins = "00"
+			} 
+			else if ( j == 1 ) {
+				mins = "05"
+			} 
+			else {
+				mins = 5 * j
+			}
+
+			var time = String( hrs[i] + ':' + mins )
+			fiveMinIncrements.push(time)
+			
+		}
+	}
+
+}
+
 
  for (var p = 0; p < bedtimes.length; p++){
  	// console.log(sleep.sleepData[p].bedTime)
 
  }
 
+ 	makeDatetimes()
 	drawAxes()
 	createRects()
+
+
+	console.log( fiveMinIncrements ) 
